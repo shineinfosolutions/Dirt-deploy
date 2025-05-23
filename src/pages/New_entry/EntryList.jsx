@@ -19,7 +19,7 @@ const EntryList = () => {
     setLoading(true);
     setIsSearching(false);
     try {
-      const res = await axios.get(`http://localhost:5000/entry/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/entry/pagination?page=${pageNumber}&limit=${limit}`);
       setEntries(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
       setLoading(false);
@@ -38,7 +38,7 @@ const EntryList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://localhost:5000/entry/search?q=${searchQuery}`);
+      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/entry/search?q=${searchQuery}`);
       setEntries(res.data.data || []);
       setTotalPages(1); // disable pagination for search
       setLoading(false);
@@ -58,7 +58,7 @@ const EntryList = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://localhost:5000/entry/delete/${id}`);
+      await axios.delete(`http://https://dirt-off-deploy.onrender.com/entry/delete/${id}`);
       toast.success('Entry deleted successfully');
       if (isSearching) {
         searchEntries(); // refresh search result

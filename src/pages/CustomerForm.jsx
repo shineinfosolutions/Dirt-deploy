@@ -41,7 +41,7 @@ const CustomerForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await axios.post('http://localhost:5000/customer/create', formData);
+      await axios.post('http://https://dirt-off-deploy.onrender.com/customer/create', formData);
       alert('Customer data submitted!');
   setFormData({
     name: '',

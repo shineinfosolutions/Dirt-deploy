@@ -21,7 +21,7 @@ const StaffForm = () => {
       const fetchCustomer = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`http://localhost:5000/staff/${id}`);
+          const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/staff/${id}`);
           setFormData(res.data.data);
         } catch (err) {
           toast.error('Failed to load customer data');
@@ -45,8 +45,8 @@ const StaffForm = () => {
     setLoading(true);
 
     const url = id
-      ? `http://localhost:5000/staff/update/${id}`
-      : 'http://localhost:5000/staff/create';
+      ? `http://https://dirt-off-deploy.onrender.com/staff/update/${id}`
+      : 'http://https://dirt-off-deploy.onrender.com/staff/create';
 
     const method = id ? 'put' : 'post';
 
