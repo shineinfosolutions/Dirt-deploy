@@ -20,7 +20,7 @@ const ServiceForm = () => {
       const fetchCustomer = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/service/${id}`);
+          const res = await axios.get(`https://dirt-off-deploy.onrender.com/service/${id}`);
           setFormData(res.data.data);
         } catch (err) {
           toast.error('Failed to load service data');
@@ -44,8 +44,8 @@ const ServiceForm = () => {
     setLoading(true);
 
     const url = id
-      ? `http://https://dirt-off-deploy.onrender.com/service/update/${id}`
-      : 'http://https://dirt-off-deploy.onrender.com/service/create';
+      ? `https://dirt-off-deploy.onrender.com/service/update/${id}`
+      : 'https://dirt-off-deploy.onrender.com/service/create';
 
     const method = id ? 'put' : 'post';
 

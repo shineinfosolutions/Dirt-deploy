@@ -17,7 +17,7 @@ const ProductList = () => {
   const fetchProducts = async (pageNumber = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/product/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/product/pagination?page=${pageNumber}&limit=${limit}`);
       setProducts(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {
@@ -32,7 +32,7 @@ const ProductList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/product/search?q=${searchQuery}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/product/search?q=${searchQuery}`);
       setProducts(res.data.data || []);
     } catch (err) {
       setProducts([]);
@@ -50,7 +50,7 @@ const ProductList = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://https://dirt-off-deploy.onrender.com/product/delete/${id}`);
+      await axios.delete(`https://dirt-off-deploy.onrender.com/product/delete/${id}`);
       toast.success('Product deleted successfully');
       fetchProducts(page);
     } catch (err) {

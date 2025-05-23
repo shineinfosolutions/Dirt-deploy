@@ -18,7 +18,7 @@ const StaffList = () => {
     setLoading(true);
     setIsSearching(false);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/staff/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/staff/pagination?page=${pageNumber}&limit=${limit}`);
       setStaff(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {
@@ -37,7 +37,7 @@ const StaffList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/staff/search?q=${searchQuery}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/staff/search?q=${searchQuery}`);
       setStaff(res.data.data || []);
       setTotalPages(1); // Disable pagination while searching
     } catch (err) {
@@ -59,7 +59,7 @@ const StaffList = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://https://dirt-off-deploy.onrender.com/staff/delete/${id}`);
+      await axios.delete(`https://dirt-off-deploy.onrender.com/staff/delete/${id}`);
       toast.success('Staff deleted successfully');
       if (isSearching) {
         searchStaff();

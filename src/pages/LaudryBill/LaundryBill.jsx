@@ -14,13 +14,13 @@ const LaundryBill = () => {
   useEffect(() => {
     const fetchBillData = async () => {
       try {
-        const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/entry/${id}`);
+        const res = await axios.get(`https://dirt-off-deploy.onrender.com/entry/${id}`);
         const entry = res.data.data;
         setBillData(entry);
 
         // Now fetch customer details by customerId
         if (entry.customerId) {
-          const customerRes = await axios.get(`http://https://dirt-off-deploy.onrender.com/custdirt/${entry.customerId}`);
+          const customerRes = await axios.get(`https://dirt-off-deploy.onrender.com/custdirt/${entry.customerId}`);
           setCustomerInfo(customerRes.data.data);
         }
       } catch (error) {

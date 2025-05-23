@@ -26,7 +26,7 @@ const LaundryInvoiceForm = ({ customerId }) => {
     // Fetch customer list from API
     const fetchCustomers = async () => {
       try {
-        const response = await axios.get('http://https://dirt-off-deploy.onrender.com/invoice/all');
+        const response = await axios.get('https://dirt-off-deploy.onrender.com/invoice/all');
         setCustomers(response.data); // Assuming response.data contains an array of customers
       } catch (error) {
         console.error('Error fetching customers:', error);
@@ -75,7 +75,7 @@ const LaundryInvoiceForm = ({ customerId }) => {
     };
 
     try {
-      const response = await axios.post('http://https://dirt-off-deploy.onrender.com/invoice/create', payload);
+      const response = await axios.post('https://dirt-off-deploy.onrender.com/invoice/create', payload);
       alert('Invoice created successfully!');
       console.log('Invoice created:', response.data);
     } catch (error) {

@@ -9,7 +9,7 @@ const CustomerList = () => {
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const res = await axios.get('http://https://dirt-off-deploy.onrender.com/customer/all');
+        const res = await axios.get('https://dirt-off-deploy.onrender.com/customer/all');
         setCustomers(res.data.data);
       } catch (err) {
         console.error('Error fetching customers:', err);

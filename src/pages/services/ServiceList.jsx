@@ -18,7 +18,7 @@ const ServiceList = () => {
     setLoading(true);
     setIsSearching(false);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/service/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/service/pagination?page=${pageNumber}&limit=${limit}`);
       setServices(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {
@@ -37,7 +37,7 @@ const ServiceList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/service/search?q=${searchQuery}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/service/search?q=${searchQuery}`);
       setServices(res.data.data || []);
       setTotalPages(1); // disable pagination for search
     } catch (err) {
@@ -59,7 +59,7 @@ const ServiceList = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://https://dirt-off-deploy.onrender.com/service/delete/${id}`);
+      await axios.delete(`https://dirt-off-deploy.onrender.com/service/delete/${id}`);
       toast.success('Service deleted successfully');
       if (isSearching) {
         searchServices(); // refresh search results

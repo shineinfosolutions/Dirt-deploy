@@ -17,7 +17,7 @@ const CustomerList = () => {
   const fetchCustomers = async (pageNumber = 1) => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/custdirt/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/custdirt/pagination?page=${pageNumber}&limit=${limit}`);
       setCustomers(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
       setLoading(false);
@@ -32,7 +32,7 @@ const CustomerList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/custdirt/search?q=${searchQuery}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/custdirt/search?q=${searchQuery}`);
       setCustomers(res.data.data || []);
       setLoading(false);
     } catch (err) {
@@ -52,7 +52,7 @@ const CustomerList = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://https://dirt-off-deploy.onrender.com/custdirt/delete/${id}`);
+      await axios.delete(`https://dirt-off-deploy.onrender.com/custdirt/delete/${id}`);
       toast.success('Customer deleted successfully');
       fetchCustomers(page);
     } catch (err) {

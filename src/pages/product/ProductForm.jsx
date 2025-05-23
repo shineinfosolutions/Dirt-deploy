@@ -18,7 +18,7 @@ const ProductForm = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const res = await axios.get('http://https://dirt-off-deploy.onrender.com/service');
+        const res = await axios.get('https://dirt-off-deploy.onrender.com/service');
         setAllServices(res.data.data);
       } catch (err) {
         toast.error('Failed to fetch services');
@@ -32,7 +32,7 @@ const ProductForm = () => {
       const fetchProduct = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/product/${id}`);
+          const res = await axios.get(`https://dirt-off-deploy.onrender.com/product/${id}`);
           setFormData(res.data.data);
         } catch (err) {
           toast.error('Failed to load product data');
@@ -81,8 +81,8 @@ const ProductForm = () => {
     e.preventDefault();
     setLoading(true);
     const url = id
-      ? `http://https://dirt-off-deploy.onrender.com/product/update/${id}`
-      : 'http://https://dirt-off-deploy.onrender.com/product/create';
+      ? `https://dirt-off-deploy.onrender.com/product/update/${id}`
+      : 'https://dirt-off-deploy.onrender.com/product/create';
     const method = id ? 'put' : 'post';
 
     try {

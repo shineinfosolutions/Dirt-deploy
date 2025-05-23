@@ -22,7 +22,7 @@ const CustomerForm = () => {
       const fetchCustomer = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/custdirt/${id}`);
+          const res = await axios.get(`https://dirt-off-deploy.onrender.com/custdirt/${id}`);
           setFormData(res.data.data);
         } catch (err) {
           toast.error('Failed to load customer data');
@@ -46,8 +46,8 @@ const CustomerForm = () => {
     setLoading(true);
 
     const url = id
-      ? `http://https://dirt-off-deploy.onrender.com/custdirt/update/${id}`
-      : 'http://https://dirt-off-deploy.onrender.com/custdirt/create';
+      ? `https://dirt-off-deploy.onrender.com/custdirt/update/${id}`
+      : 'https://dirt-off-deploy.onrender.com/custdirt/create';
 
     const method = id ? 'put' : 'post';
 

@@ -25,7 +25,7 @@ useEffect(() => {
   // Fetch services, customers, products once on mount
   const fetchServices = async () => {
     try {
-      const res = await axios.get('http://https://dirt-off-deploy.onrender.com/service');
+      const res = await axios.get('https://dirt-off-deploy.onrender.com/service');
       if (Array.isArray(res.data.data)) setServices(res.data.data);
     } catch {
       toast.error('Failed to fetch services');
@@ -34,7 +34,7 @@ useEffect(() => {
 
   const fetchCustomers = async () => {
     try {
-      const res = await axios.get('http://https://dirt-off-deploy.onrender.com/custdirt');
+      const res = await axios.get('https://dirt-off-deploy.onrender.com/custdirt');
       if (Array.isArray(res.data.data)) setCustomers(res.data.data);
     } catch {
       toast.error('Failed to fetch customers');
@@ -43,7 +43,7 @@ useEffect(() => {
 
   const fetchProducts = async () => {
     try {
-      const res = await axios.get('http://https://dirt-off-deploy.onrender.com/product');
+      const res = await axios.get('https://dirt-off-deploy.onrender.com/product');
       if (Array.isArray(res.data.data)) setProducts(res.data.data);
     } catch {
       toast.error('Failed to fetch products');
@@ -62,7 +62,7 @@ useEffect(() => {
   const fetchEntry = async () => {
     setLoading(true);
     try {
-      const res = await axios.get(`http://https://dirt-off-deploy.onrender.com/entry/${id}`);
+      const res = await axios.get(`https://dirt-off-deploy.onrender.com/entry/${id}`);
       const entryData = res.data.data;
 
       // Find taxPercent for the service in entryData
@@ -202,8 +202,8 @@ const handleChange = (e) => {
     setLoading(true);
 
     const url = id
-      ? `http://https://dirt-off-deploy.onrender.com/entry/update/${id}`
-      : 'http://https://dirt-off-deploy.onrender.com/entry/create';
+      ? `https://dirt-off-deploy.onrender.com/entry/update/${id}`
+      : 'https://dirt-off-deploy.onrender.com/entry/create';
     const method = id ? 'put' : 'post';
 
     try {
