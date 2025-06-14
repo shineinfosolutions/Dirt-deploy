@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { FaTrashAlt, FaEdit } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FaTrashAlt, FaEdit } from "react-icons/fa";
 
 const EntryList = () => {
   const [entries, setEntries] = useState([]);
@@ -10,7 +10,7 @@ const EntryList = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
 
   const limit = 10;
@@ -19,12 +19,14 @@ const EntryList = () => {
     setLoading(true);
     setIsSearching(false);
     try {
-      const res = await axios.get(`https://dirt-off-deploy.onrender.com/entry/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(
+        `https://dirt-off-deploy.onrender.com/entry/pagination?page=${pageNumber}&limit=${limit}`
+      );
       setEntries(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
       setLoading(false);
     } catch (err) {
-      setError('Failed to fetch entries');
+      setError("Failed to fetch entries");
       setLoading(false);
     }
   };
@@ -38,12 +40,14 @@ const EntryList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`https://dirt-off-deploy.onrender.com/entry/search?q=${searchQuery}`);
+      const res = await axios.get(
+        `https://dirt-off-deploy.onrender.com/entry/search?q=${searchQuery}`
+      );
       setEntries(res.data.data || []);
       setTotalPages(1); // disable pagination for search
       setLoading(false);
     } catch (err) {
-      toast.error('No results found');
+      toast.error("No results found");
       setEntries([]);
       setLoading(false);
     }
@@ -54,19 +58,23 @@ const EntryList = () => {
   }, [page]);
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm('Are you sure you want to delete this entry?');
+    const confirm = window.confirm(
+      "Are you sure you want to delete this entry?"
+    );
     if (!confirm) return;
 
     try {
-      await axios.delete(`https://dirt-off-deploy.onrender.com/entry/delete/${id}`);
-      toast.success('Entry deleted successfully');
+      await axios.delete(
+        `https://dirt-off-deploy.onrender.com/entry/delete/${id}`
+      );
+      toast.success("Entry deleted successfully");
       if (isSearching) {
         searchEntries(); // refresh search result
       } else {
         fetchEntries(page); // refresh current page
       }
     } catch (err) {
-      toast.error('Failed to delete entry');
+      toast.error("Failed to delete entry");
     }
   };
 
@@ -89,33 +97,32 @@ const EntryList = () => {
       </div>
 
       {/* Search box */}
-    <div className="flex items-center mb-6 space-x-2">
-  <input
-    type="text"
-    value={searchQuery}
-    onChange={(e) => setSearchQuery(e.target.value)}
-    placeholder="Search by customer or receipt no..."
-    className="border border-gray-300 px-4 py-2 rounded w-full"
-  />
-  <button
-    onClick={searchEntries}
-    className="bg-[#a997cb] text-white px-4 py-2 rounded hover:bg-[#8a82b5]"
-  >
-    Search
-  </button>
-  {isSearching && (
-    <button
-      onClick={() => {
-        setSearchQuery('');
-        fetchEntries(1); // Reset to page 1 and refetch normal entries
-      }}
-      className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
-    >
-      Clear
-    </button>
-  )}
-</div>
-
+      <div className="flex items-center mb-6 space-x-2">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search by customer or receipt no..."
+          className="border border-gray-300 px-4 py-2 rounded w-full"
+        />
+        <button
+          onClick={searchEntries}
+          className="bg-[#a997cb] text-white px-4 py-2 rounded hover:bg-[#8a82b5]"
+        >
+          Search
+        </button>
+        {isSearching && (
+          <button
+            onClick={() => {
+              setSearchQuery("");
+              fetchEntries(1); // Reset to page 1 and refetch normal entries
+            }}
+            className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
+          >
+            Clear
+          </button>
+        )}
+      </div>
 
       {loading ? (
         <p className="text-gray-600 text-center mt-10">Loading entries...</p>
@@ -127,6 +134,7 @@ const EntryList = () => {
             <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden">
               <thead className="bg-[#e7e3f5] text-[#a997cb]">
                 <tr>
+                  <th className="text-left px-4 py-2">S.No</th>
                   <th className="text-left px-4 py-2">Customer</th>
                   <th className="text-left px-4 py-2">Service</th>
                   <th className="text-left px-4 py-2">Products</th>
@@ -137,18 +145,25 @@ const EntryList = () => {
                 </tr>
               </thead>
               <tbody className="bg-white">
-                {entries.map((entry) => (
+                {entries.map((entry, index) => (
                   <tr key={entry._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border text-center">
+                      {(page - 1) * limit + index + 1}
+                    </td>
                     <td className="px-4 py-2 border">{entry.customer}</td>
                     <td className="px-4 py-2 border">{entry.service}</td>
                     <td className="px-4 py-2 border">
-                      {entry.products.map((p) => p.productName).join(', ')}
+                      {entry.products.map((p) => p.productName).join(", ")}
                     </td>
                     <td className="px-4 py-2 border">
                       ₹ {entry.charges?.totalAmount?.toFixed(2)}
                     </td>
-                    <td className="px-4 py-2 border">{entry.pickupAndDelivery?.pickupType}</td>
-                    <td className="px-4 py-2 border">{entry.pickupAndDelivery?.deliveryType}</td>
+                    <td className="px-4 py-2 border">
+                      {entry.pickupAndDelivery?.pickupType}
+                    </td>
+                    <td className="px-4 py-2 border">
+                      {entry.pickupAndDelivery?.deliveryType}
+                    </td>
                     <td className="px-4 py-2 border text-center">
                       <Link
                         to={`/entryform/${entry._id}`}
@@ -191,8 +206,8 @@ const EntryList = () => {
                   onClick={() => handlePageChange(i + 1)}
                   className={`px-3 py-1 rounded ${
                     page === i + 1
-                      ? 'bg-[#a997cb] text-white'
-                      : 'bg-gray-100 text-gray-600'
+                      ? "bg-[#a997cb] text-white"
+                      : "bg-gray-100 text-gray-600"
                   }`}
                 >
                   {i + 1}
