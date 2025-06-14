@@ -191,10 +191,8 @@ const EntryForm = () => {
 
     if (name === "customer") {
       if (value === "add_new") {
-        sessionStorage.setItem("entryFormData", JSON.stringify(formData));
-        // Navigate to customer form
-        navigate("/customerform");
-        return; // Update this path to match your route   return;
+        navigate("/customerform", { state: { fromEntryForm: true } });
+        return;
       }
 
       // Find customer by name
