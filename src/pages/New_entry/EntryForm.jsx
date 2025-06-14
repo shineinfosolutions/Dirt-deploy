@@ -198,12 +198,26 @@ const EntryForm = () => {
       // Find customer by name
       const selectedCustomer = customers.find((c) => c.firstName === value);
 
+      // Update form data with customer info
       setFormData((prev) => ({
         ...prev,
         customer: value,
-        customerId: selectedCustomer?._id || "", // <-- set ObjectId here
+        customerId: selectedCustomer?._id || "",
+        pickupAndDelivery: {
+          ...prev.pickupAndDelivery,
+          pickupAddress: selectedCustomer?.address || "",
+          deliveryAddress: selectedCustomer?.address || "",
+        },
       }));
     } else if (name === "pickupType" || name === "deliveryType") {
+      setFormData((prev) => ({
+        ...prev,
+        pickupAndDelivery: {
+          ...prev.pickupAndDelivery,
+          [name]: value,
+        },
+      }));
+    } else if (name === "pickupAddress" || name === "deliveryAddress") {
       setFormData((prev) => ({
         ...prev,
         pickupAndDelivery: {
@@ -218,7 +232,6 @@ const EntryForm = () => {
       }));
     }
   };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -434,7 +447,8 @@ const EntryForm = () => {
               <option value="Agent">Agent</option>
               <option value="Courier">Courier</option>
             </select>
-            {formData.pickupAndDelivery.pickupType === "Agent" && (
+            {(formData.pickupAndDelivery.pickupType === "Agent" ||
+              formData.pickupAndDelivery.pickupType === "Courier") && (
               <div className="mt-2">
                 <label className="block text-sm text-gray-600 mb-1">
                   Pickup Address
@@ -465,7 +479,8 @@ const EntryForm = () => {
               <option value="Agent">Agent</option>
               <option value="Courier">Courier</option>
             </select>
-            {formData.pickupAndDelivery.deliveryType === "Agent" && (
+            {(formData.pickupAndDelivery.pickupType === "Agent" ||
+              formData.pickupAndDelivery.pickupType === "Courier") && (
               <div className="mt-2">
                 <label className="block text-sm text-gray-600 mb-1">
                   Delivery Address
