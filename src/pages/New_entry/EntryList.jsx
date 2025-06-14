@@ -3,6 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
+import { RiNewspaperLine } from "react-icons/ri";
 
 const EntryList = () => {
   const [entries, setEntries] = useState([]);
@@ -134,7 +135,7 @@ const EntryList = () => {
             <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden">
               <thead className="bg-[#e7e3f5] text-[#a997cb]">
                 <tr>
-                  <th className="text-left px-4 py-2">S.No</th>
+                  <th className="text-left px-4 py-2">Rcpt No.</th>
                   <th className="text-left px-4 py-2">Customer</th>
                   <th className="text-left px-4 py-2">Service</th>
                   <th className="text-left px-4 py-2">Products</th>
@@ -171,17 +172,26 @@ const EntryList = () => {
                       >
                         <FaEdit />
                       </Link>
+
                       <button
                         onClick={() => handleDelete(entry._id)}
                         className="text-sm text-red-600 hover:underline"
                       >
                         <FaTrashAlt />
                       </button>
+
                       <Link
                         to={`/LaundryBill/${entry._id}`}
                         className="text-sm pl-3 text-[#a997cb] hover:text-[#8a82b5] hover:underline mr-4"
                       >
                         View
+                      </Link>
+
+                      <Link
+                        to={`#`}
+                        className="text-sm text-[#7f59c5] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
+                      >
+                        <RiNewspaperLine />
                       </Link>
                     </td>
                   </tr>

@@ -1,18 +1,20 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';  // Import useNavigate from react-router-dom
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom"; // Import useNavigate from react-router-dom
+import axios from "axios";
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
-  const navigate = useNavigate();  // Initialize useNavigate hook
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   useEffect(() => {
     const fetchCustomers = async () => {
       try {
-        const res = await axios.get('https://dirt-off-deploy.onrender.com/customer/all');
+        const res = await axios.get(
+          "https://dirt-off-deploy.onrender.com/customer/all"
+        );
         setCustomers(res.data.data);
       } catch (err) {
-        console.error('Error fetching customers:', err);
+        console.error("Error fetching customers:", err);
       }
     };
 
@@ -49,9 +51,11 @@ const CustomerList = () => {
                 <tr key={cust._id} className="hover:bg-gray-50 text-sm">
                   <td className="py-2 px-4 border-b border-r">{cust.name}</td>
                   <td className="py-2 px-4 border-b border-r">{cust.phone}</td>
-                  <td className="py-2 px-4 border-b border-r">₹{cust.totalAmount}</td>
+                  <td className="py-2 px-4 border-b border-r">
+                    ₹{cust.totalAmount}
+                  </td>
                   <td className="py-2 px-4 border-b border-r capitalize">
-                    {cust.status || 'pending'}
+                    {cust.status || "pending"}
                   </td>
                   <td className="py-2 px-4 border-b border-r">
                     {new Date(cust.dateCollected).toLocaleDateString()}
@@ -59,7 +63,7 @@ const CustomerList = () => {
                   <td className="py-2 px-4 border-b border-r">
                     {cust.dateDelivered
                       ? new Date(cust.dateDelivered).toLocaleDateString()
-                      : '-'}
+                      : "-"}
                   </td>
                   <td className="py-2 px-4 border-b space-x-2">
                     <button className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600">
@@ -67,7 +71,7 @@ const CustomerList = () => {
                     </button>
                     <button
                       className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
-                      onClick={() => handleInvoiceClick(cust._id)}  // Call handleInvoiceClick with customer ID
+                      onClick={() => handleInvoiceClick(cust._id)} // Call handleInvoiceClick with customer ID
                     >
                       Invoice
                     </button>
