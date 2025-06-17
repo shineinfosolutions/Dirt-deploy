@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-// import toast from "react-hot-toast";
+import toast from "react-hot-toast";
 
-const CustomerForm = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
+const ModalCustomer = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
@@ -45,39 +45,43 @@ const CustomerForm = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
     }));
   };
 
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   setLoading(true);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-  //   const url = id
-  //     ? `https://dirt-off-backend.vercel.app/custdirt/update/${id}`
-  //     : "https://dirt-off-backend.vercel.app/custdirt/create";
+    const url = id
+      ? `https://dirt-off-deploy.onrender.com/custdirt/update/${id}`
+      : "https://dirt-off-deploy.onrender.com/custdirt/create";
 
-  //   const method = id ? "put" : "post";
+    const method = id ? "put" : "post";
 
-  //   try {
-  //     const res = await axios[method](url, formData);
+    try {
+      const res = await axios[method](url, formData);
 
-  //     if (fromEntryForm && onSubmitSuccess) {
-  //       onSubmitSuccess(formData);
-  //       return;
-  //     }
+      toast.success(
+        id ? "Customer updated successfully!" : "Customer added successfully!"
+      );
 
-  //     // toast.success(
-  //     //   id ? "Customer updated successfully!" : "Customer added successfully!"
-  //     // );
-  //     navigate("/customerlist");
-  //   } catch (err) {
-  //     // toast.error(err.response?.data?.message || "Something went wrong");
-  //   } finally {
-  //     setLoading(false);
-  //   }
-  // };
+      if (isPopup && onSubmitSuccess) {
+        onSubmitSuccess(formData);
+        if (onCancel) {
+          onCancel(); // Close the modal after successful submission
+        }
+        return;
+      }
+
+      navigate("/entryform");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <button
+        {/* <button
           onClick={() => {
             if (fromEntryForm) {
               navigate("/entryform");
@@ -88,7 +92,7 @@ const CustomerForm = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
           className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
         >
           ← Back
-        </button>{" "}
+        </button>{" "} */}
       </div>
       <form
         onSubmit={handleSubmit}
@@ -192,4 +196,4 @@ const CustomerForm = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
   );
 };
 
-export default CustomerForm;
+export default ModalCustomer;

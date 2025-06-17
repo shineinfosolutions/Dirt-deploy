@@ -18,7 +18,7 @@ const ProductList = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/product/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend.vercel.app/product/pagination?page=${pageNumber}&limit=${limit}`
       );
       setProducts(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -35,7 +35,7 @@ const ProductList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/product/search?q=${searchQuery}`
+        `https://dirt-off-backend.vercel.app/product/search?q=${searchQuery}`
       );
       setProducts(res.data.data || []);
     } catch (err) {
@@ -57,7 +57,7 @@ const ProductList = () => {
 
     try {
       await axios.delete(
-        `https://dirt-off-deploy.onrender.com/product/delete/${id}`
+        `https://dirt-off-backend.vercel.app/product/delete/${id}`
       );
       toast.success("Product deleted successfully");
       fetchProducts(page);

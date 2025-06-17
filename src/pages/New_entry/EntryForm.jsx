@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import ModalCustomer from "../customer/ModalCoustomer";
 
 const EntryForm = () => {
   const { id } = useParams();
@@ -10,7 +11,7 @@ const EntryForm = () => {
   const [formData, setFormData] = useState({
     customer: "",
     customerId: "",
-    service: "",
+    // service: "",
     products: [{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }],
     charges: { subtotal: 0, taxAmount: 0, totalAmount: 0 },
     taxPercent: 0,
@@ -21,11 +22,13 @@ const EntryForm = () => {
       deliveryAddress: "",
     },
   });
-
-  const [services, setServices] = useState([]);
+  const services = [];
+  // const [services, setServices] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [showCustomerPopup, setShowCustomerPopup] = useState(false);
+
   useEffect(() => {
     const savedFormData = sessionStorage.getItem("entryFormData");
     if (savedFormData) {
@@ -33,21 +36,21 @@ const EntryForm = () => {
       sessionStorage.removeItem("entryFormData"); // Clear after retrieving
     }
     // Fetch services, customers, products once on mount
-    const fetchServices = async () => {
-      try {
-        const res = await axios.get(
-          "https://dirt-off-deploy.onrender.com/service"
-        );
-        if (Array.isArray(res.data.data)) setServices(res.data.data);
-      } catch {
-        toast.error("Failed to fetch services");
-      }
-    };
+    // const fetchServices = async () => {
+    //   try {
+    //     const res = await axios.get(
+    //       "https://dirt-off-backend.vercel.app/service"
+    //     );
+    //     if (Array.isArray(res.data.data)) setServices(res.data.data);
+    //   } catch {
+    //     toast.error("Failed to fetch services");
+    //   }
+    // };
 
     const fetchCustomers = async () => {
       try {
         const res = await axios.get(
-          "https://dirt-off-deploy.onrender.com/custdirt"
+          "https://dirt-off-backend.vercel.app/custdirt"
         );
         if (Array.isArray(res.data.data)) setCustomers(res.data.data);
       } catch {
@@ -58,7 +61,7 @@ const EntryForm = () => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get(
-          "https://dirt-off-deploy.onrender.com/product"
+          "https://dirt-off-backend.vercel.app/product"
         );
         if (Array.isArray(res.data.data)) setProducts(res.data.data);
       } catch {
@@ -66,7 +69,7 @@ const EntryForm = () => {
       }
     };
 
-    fetchServices();
+    // fetchServices();
     fetchCustomers();
     fetchProducts();
   }, []); // empty dependency means only runs once
@@ -79,7 +82,7 @@ const EntryForm = () => {
       setLoading(true);
       try {
         const res = await axios.get(
-          `https://dirt-off-deploy.onrender.com/entry/${id}`
+          `https://dirt-off-backend.vercel.app/entry/${id}`
         );
         const entryData = res.data.data;
 
@@ -113,6 +116,33 @@ const EntryForm = () => {
 
     fetchEntry();
   }, [id, services]);
+
+  const handleAddCustomer = async (newCustomer) => {
+    try {
+      const res = await axios.post(
+        "https://dirt-off-backend.vercel.app/custdirt/create",
+        newCustomer
+      );
+      const addedCustomer = res.data.data;
+
+      setCustomers((prev) => [...prev, addedCustomer]);
+      setFormData((prev) => ({
+        ...prev,
+        customer: addedCustomer.firstName,
+        customerId: addedCustomer._id,
+        pickupAndDelivery: {
+          ...prev.pickupAndDelivery,
+          pickupAddress: addedCustomer.address || "",
+          deliveryAddress: addedCustomer.address || "",
+        },
+      }));
+
+      setShowCustomerPopup(false);
+      // toast.success("Customer added successfully!");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to add customer");
+    }
+  };
 
   const recalculateCharges = (products, taxPercent) => {
     const subtotal = products.reduce((acc, p) => acc + p.amount, 0);
@@ -191,7 +221,7 @@ const EntryForm = () => {
 
     if (name === "customer") {
       if (value === "add_new") {
-        navigate("/customerform", { state: { fromEntryForm: true } });
+        setShowCustomerPopup(true);
         return;
       }
 
@@ -237,8 +267,8 @@ const EntryForm = () => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-deploy.onrender.com/entry/update/${id}`
-      : "https://dirt-off-deploy.onrender.com/entry/create";
+      ? `https://dirt-off-backend.vercel.app/entry/update/${id}`
+      : "https://dirt-off-backend.vercel.app/entry/create";
     const method = id ? "put" : "post";
 
     try {
@@ -254,6 +284,28 @@ const EntryForm = () => {
 
   return (
     <div>
+      {showCustomerPopup && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="flex justify-between items-center mb-4">
+              {/* <h2 className="text-xl font-semibold text-[#a997cb]">
+                Add New Customer
+              </h2> */}
+              <button
+                onClick={() => setShowCustomerPopup(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+            </div>
+            <ModalCustomer
+              isPopup={true}
+              onSubmitSuccess={handleAddCustomer}
+              onCancel={() => setShowCustomerPopup(false)}
+            />
+          </div>
+        </div>
+      )}
       <div className="flex justify-end mb-4">
         <button
           onClick={() => navigate("/entrylist")}
@@ -270,7 +322,7 @@ const EntryForm = () => {
           {id ? "Edit Entry" : "New Entry"}
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-col gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-600 mb-1">
               Customer Name *
@@ -283,30 +335,12 @@ const EntryForm = () => {
               className="w-full border px-3 py-2 rounded"
             >
               <option value="">Select Customer</option>
-              <option value="add_new">Add New Customer</option>
+              <option value="add_new" className="font-bold text-theme-black ">
+                ➕ Add New Customer
+              </option>
               {customers.map((customer) => (
                 <option key={customer.id} value={customer.firstName}>
                   {customer.firstName}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-600 mb-1">
-              Service *
-            </label>
-            <select
-              name="service"
-              value={formData.service}
-              onChange={handleServiceChange}
-              required
-              className="w-full border px-3 py-2 rounded"
-            >
-              <option value="">Select Service</option>
-              {services.map((service) => (
-                <option key={service.id} value={service.serviceName}>
-                  {service.serviceName}
                 </option>
               ))}
             </select>
@@ -318,7 +352,7 @@ const EntryForm = () => {
           {formData.products.map((product, index) => (
             <div
               key={index}
-              className="grid grid-cols-1 sm:grid-cols-5 gap-3 items-end mb-3"
+              className="grid grid-cols-1 sm:grid-cols-6 gap-3 items-end mb-3"
             >
               <div>
                 <label className="block text-sm text-gray-600 mb-1">
@@ -340,6 +374,26 @@ const EntryForm = () => {
                   ))}
                 </select>
               </div>
+
+              {/* <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1">
+                  Service *
+                </label>
+                <select
+                  name="service"
+                  value={formData.service}
+                  onChange={handleServiceChange}
+                  required
+                  className="w-full border px-3 py-2 rounded"
+                >
+                  <option value="">Select Service</option>
+                  {services.map((service) => (
+                    <option key={service.id} value={service.serviceName}>
+                      {service.serviceName}
+                    </option>
+                  ))}
+                </select>
+              </div> */}
               <div>
                 <label className="block text-sm text-gray-600 mb-1">
                   Quantity *
@@ -479,8 +533,8 @@ const EntryForm = () => {
               <option value="Agent">Agent</option>
               <option value="Courier">Courier</option>
             </select>
-            {(formData.pickupAndDelivery.pickupType === "Agent" ||
-              formData.pickupAndDelivery.pickupType === "Courier") && (
+            {(formData.pickupAndDelivery.deliveryType === "Agent" ||
+              formData.pickupAndDelivery.deliveryType === "Courier") && (
               <div className="mt-2">
                 <label className="block text-sm text-gray-600 mb-1">
                   Delivery Address

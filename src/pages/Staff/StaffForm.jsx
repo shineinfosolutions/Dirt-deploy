@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const StaffForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    phone: '',
-    email: '',
-    address: ''
+    firstName: "",
+    lastName: "",
+    phone: "",
+    email: "",
+    address: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -21,10 +21,12 @@ const StaffForm = () => {
       const fetchCustomer = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`https://dirt-off-deploy.onrender.com/staff/${id}`);
+          const res = await axios.get(
+            `https://dirt-off-backend.vercel.app/staff/${id}`
+          );
           setFormData(res.data.data);
         } catch (err) {
-          toast.error('Failed to load customer data');
+          toast.error("Failed to load customer data");
         } finally {
           setLoading(false);
         }
@@ -34,9 +36,9 @@ const StaffForm = () => {
   }, [id]);
 
   const handleChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -45,17 +47,19 @@ const StaffForm = () => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-deploy.onrender.com/staff/update/${id}`
-      : 'https://dirt-off-deploy.onrender.com/staff/create';
+      ? `https://dirt-off-backend.vercel.app/staff/update/${id}`
+      : "https://dirt-off-backend.vercel.app/staff/create";
 
-    const method = id ? 'put' : 'post';
+    const method = id ? "put" : "post";
 
     try {
       await axios[method](url, formData);
-      toast.success(id ? 'Staff updated successfully!' : 'Staff added successfully!');
-      navigate('/stafflist');
+      toast.success(
+        id ? "Staff updated successfully!" : "Staff added successfully!"
+      );
+      navigate("/stafflist");
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -63,85 +67,98 @@ const StaffForm = () => {
 
   return (
     <div>
-          <div className="flex justify-end mb-4">
-  <button
-    onClick={() => navigate('/stafflist')}
- className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
-  >
-    ← Back
-  </button>
-</div>
-    <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white shadow p-6 rounded-lg space-y-4">
-      <h2 className="text-xl font-semibold text-[#a997cb] mb-4">
-        {id ? 'Edit Staff' : 'Add Staff'}
-      </h2>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-600">First Name *</label>
-          <input
-            name="firstName"
-            type="text"
-            value={formData.firstName}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600">Last Name</label>
-          <input
-            name="lastName"
-            type="text"
-            value={formData.lastName}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600">Phone *</label>
-          <input
-            name="phone"
-            type="text"
-            value={formData.phone}
-            onChange={handleChange}
-            pattern="[6-9]\d{9}"
-            required
-            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-            placeholder="10-digit number"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-600">Email *</label>
-          <input
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-600">Address</label>
-          <input
-            name="address"
-            type="text"
-            value={formData.address}
-            onChange={handleChange}
-            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-          />
-        </div>
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => navigate("/stafflist")}
+          className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
+        >
+          ← Back
+        </button>
       </div>
-
-      <button
-        type="submit"
-        disabled={loading}
-        className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
+      <form
+        onSubmit={handleSubmit}
+        className="max-w-2xl mx-auto bg-white shadow p-6 rounded-lg space-y-4"
       >
-        {loading ? 'Saving...' : id ? 'Update Staff' : 'Add Staff'}
-      </button>
-    </form>
+        <h2 className="text-xl font-semibold text-[#a997cb] mb-4">
+          {id ? "Edit Staff" : "Add Staff"}
+        </h2>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              First Name *
+            </label>
+            <input
+              name="firstName"
+              type="text"
+              value={formData.firstName}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              Last Name
+            </label>
+            <input
+              name="lastName"
+              type="text"
+              value={formData.lastName}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              Phone *
+            </label>
+            <input
+              name="phone"
+              type="text"
+              value={formData.phone}
+              onChange={handleChange}
+              pattern="[6-9]\d{9}"
+              required
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+              placeholder="10-digit number"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-600">
+              Email *
+            </label>
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-600">
+              Address
+            </label>
+            <input
+              name="address"
+              type="text"
+              value={formData.address}
+              onChange={handleChange}
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
+        >
+          {loading ? "Saving..." : id ? "Update Staff" : "Add Staff"}
+        </button>
+      </form>
     </div>
   );
 };

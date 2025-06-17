@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import axios from 'axios';
-import toast from 'react-hot-toast';
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 const ServiceForm = () => {
   const { id } = useParams();
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    serviceName: '',
-    description: '',
-    taxPercent: '',
+    serviceName: "",
+    description: "",
+    taxPercent: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -20,10 +20,12 @@ const ServiceForm = () => {
       const fetchCustomer = async () => {
         setLoading(true);
         try {
-          const res = await axios.get(`https://dirt-off-deploy.onrender.com/service/${id}`);
+          const res = await axios.get(
+            `https://dirt-off-backend.vercel.app/service/${id}`
+          );
           setFormData(res.data.data);
         } catch (err) {
-          toast.error('Failed to load service data');
+          toast.error("Failed to load service data");
         } finally {
           setLoading(false);
         }
@@ -33,9 +35,9 @@ const ServiceForm = () => {
   }, [id]);
 
   const handleChange = (e) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -44,17 +46,19 @@ const ServiceForm = () => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-deploy.onrender.com/service/update/${id}`
-      : 'https://dirt-off-deploy.onrender.com/service/create';
+      ? `https://dirt-off-backend.vercel.app/service/update/${id}`
+      : "https://dirt-off-backend.vercel.app/service/create";
 
-    const method = id ? 'put' : 'post';
+    const method = id ? "put" : "post";
 
     try {
       await axios[method](url, formData);
-      toast.success(id ? 'Service updated successfully!' : 'Service added successfully!');
-      navigate('/servicelist');
+      toast.success(
+        id ? "Service updated successfully!" : "Service added successfully!"
+      );
+      navigate("/servicelist");
     } catch (err) {
-      toast.error(err.response?.data?.message || 'Something went wrong');
+      toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -63,25 +67,29 @@ const ServiceForm = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 py-10 relative">
       {/* ✅ Back Button - Outside of Form */}
-     <div className="flex justify-end mb-4">
-  <button
-    onClick={() => navigate('/servicelist')}
- className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
-  >
-    ← Back
-  </button>
-</div>
-
+      <div className="flex justify-end mb-4">
+        <button
+          onClick={() => navigate("/servicelist")}
+          className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
+        >
+          ← Back
+        </button>
+      </div>
 
       {/* ✅ Form Card */}
-      <form onSubmit={handleSubmit} className="bg-white shadow p-6 rounded-lg space-y-4">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white shadow p-6 rounded-lg space-y-4"
+      >
         <h2 className="text-xl font-semibold text-[#a997cb] mb-4">
-          {id ? 'Edit Service' : 'Add Service'}
+          {id ? "Edit Service" : "Add Service"}
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600">Service Name *</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Service Name *
+            </label>
             <input
               name="serviceName"
               type="text"
@@ -93,7 +101,9 @@ const ServiceForm = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-600">Description</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Description
+            </label>
             <input
               name="description"
               type="text"
@@ -104,7 +114,9 @@ const ServiceForm = () => {
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-600">Tax Percentage</label>
+            <label className="block text-sm font-medium text-gray-600">
+              Tax Percentage
+            </label>
             <input
               name="taxPercent"
               type="text"
@@ -120,7 +132,7 @@ const ServiceForm = () => {
           disabled={loading}
           className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
         >
-          {loading ? 'Saving...' : id ? 'Update Service' : 'Add Service'}
+          {loading ? "Saving..." : id ? "Update Service" : "Add Service"}
         </button>
       </form>
     </div>

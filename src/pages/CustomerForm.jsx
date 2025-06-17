@@ -51,7 +51,7 @@ const CustomerForm = () => {
     e.preventDefault();
     try {
       await axios.post(
-        "https://dirt-off-deploy.onrender.com/customer/create",
+        "https://dirt-off-backend.vercel.app/customer/create",
         formData
       );
       alert("Customer data submitted!");

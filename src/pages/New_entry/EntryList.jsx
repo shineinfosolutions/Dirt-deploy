@@ -13,6 +13,7 @@ const EntryList = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
+  const [billData, setBillData] = useState(null);
 
   const limit = 10;
 
@@ -21,7 +22,7 @@ const EntryList = () => {
     setIsSearching(false);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/entry/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend.vercel.app/entry/pagination?page=${pageNumber}&limit=${limit}`
       );
       setEntries(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -42,7 +43,7 @@ const EntryList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/entry/search?q=${searchQuery}`
+        `https://dirt-off-backend.vercel.app/entry/search?q=${searchQuery}`
       );
       setEntries(res.data.data || []);
       setTotalPages(1); // disable pagination for search
@@ -66,7 +67,7 @@ const EntryList = () => {
 
     try {
       await axios.delete(
-        `https://dirt-off-deploy.onrender.com/entry/delete/${id}`
+        `https://dirt-off-backend.vercel.app/entry/delete/${id}`
       );
       toast.success("Entry deleted successfully");
       if (isSearching) {
@@ -137,7 +138,7 @@ const EntryList = () => {
                 <tr>
                   <th className="text-left px-4 py-2">Rcpt No.</th>
                   <th className="text-left px-4 py-2">Customer</th>
-                  <th className="text-left px-4 py-2">Service</th>
+                  {/* <th className="text-left px-4 py-2">Service</th> */}
                   <th className="text-left px-4 py-2">Products</th>
                   <th className="text-left px-4 py-2">Total Amount</th>
                   <th className="text-left px-4 py-2">Pickup</th>
@@ -149,10 +150,11 @@ const EntryList = () => {
                 {entries.map((entry, index) => (
                   <tr key={entry._id} className="hover:bg-gray-50">
                     <td className="px-4 py-2 border text-center">
-                      {(page - 1) * limit + index + 1}
+                      <p> {entry.receiptNo || "N/A"}</p>
                     </td>
+
                     <td className="px-4 py-2 border">{entry.customer}</td>
-                    <td className="px-4 py-2 border">{entry.service}</td>
+                    {/* <td className="px-4 py-2 border">{entry.service}</td> */}
                     <td className="px-4 py-2 border">
                       {entry.products.map((p) => p.productName).join(", ")}
                     </td>

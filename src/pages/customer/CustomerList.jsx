@@ -18,7 +18,7 @@ const CustomerList = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/custdirt/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend.vercel.app/custdirt/pagination?page=${pageNumber}&limit=${limit}`
       );
       setCustomers(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -35,7 +35,7 @@ const CustomerList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/custdirt/search?q=${searchQuery}`
+        `https://dirt-off-backend.vercel.app/custdirt/search?q=${searchQuery}`
       );
       setCustomers(res.data.data || []);
       setLoading(false);
@@ -59,7 +59,7 @@ const CustomerList = () => {
 
     try {
       await axios.delete(
-        `https://dirt-off-deploy.onrender.com/custdirt/delete/${id}`
+        `https://dirt-off-backend.vercel.app/custdirt/delete/${id}`
       );
       toast.success("Customer deleted successfully");
       fetchCustomers(page);
@@ -88,12 +88,12 @@ const CustomerList = () => {
         <h2 className="text-2xl font-bold text-theme-purple">
           Customer Directory
         </h2>
-        <Link
+        {/* <Link
           to="/customerform"
           className="bg-theme-purple text-white px-4 py-2 rounded hover:bg-theme-purple-dark transition"
         >
           + Add Customer
-        </Link>
+        </Link> */}
       </div>
 
       {/* Search Input */}

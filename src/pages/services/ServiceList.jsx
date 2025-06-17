@@ -19,7 +19,7 @@ const ServiceList = () => {
     setIsSearching(false);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/service/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend.vercel.app/service/pagination?page=${pageNumber}&limit=${limit}`
       );
       setServices(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -40,7 +40,7 @@ const ServiceList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-deploy.onrender.com/service/search?q=${searchQuery}`
+        `https://dirt-off-backend.vercel.app/service/search?q=${searchQuery}`
       );
       setServices(res.data.data || []);
       setTotalPages(1); // disable pagination for search
@@ -66,7 +66,7 @@ const ServiceList = () => {
 
     try {
       await axios.delete(
-        `https://dirt-off-deploy.onrender.com/service/delete/${id}`
+        `https://dirt-off-backend.vercel.app/service/delete/${id}`
       );
       toast.success("Service deleted successfully");
       if (isSearching) {
