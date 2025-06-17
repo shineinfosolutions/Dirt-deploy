@@ -76,7 +76,7 @@ const EntryForm = () => {
 
   // Fetch entry data only once services have loaded and id is present
   useEffect(() => {
-    if (!id || services.length === 0) return;
+    if (!id) return;
 
     const fetchEntry = async () => {
       setLoading(true);
@@ -86,17 +86,12 @@ const EntryForm = () => {
         );
         const entryData = res.data.data;
 
-        // Find taxPercent for the service in entryData
-        const matchedService = services.find(
-          (s) => s.serviceName === entryData.service
-        );
-        const taxPercent = matchedService?.taxPercent || 0;
-
-        // Calculate charges with taxPercent from service
+        // Calculate charges directly
         const subtotal = entryData.products.reduce(
           (acc, p) => acc + p.amount,
           0
         );
+        const taxPercent = entryData.taxPercent || 0; // Define taxPercent here
         const taxAmount = parseFloat(
           ((subtotal * taxPercent) / 100).toFixed(2)
         );
@@ -115,7 +110,7 @@ const EntryForm = () => {
     };
 
     fetchEntry();
-  }, [id, services]);
+  }, [id]);
 
   const handleAddCustomer = async (newCustomer) => {
     try {
@@ -199,15 +194,19 @@ const EntryForm = () => {
       charges,
     }));
   };
-
   const handleAddProduct = () => {
-    setFormData((prev) => ({
-      ...prev,
-      products: [
-        ...prev.products,
-        { productName: "", quantity: 1, unitPrice: 0, amount: 0 },
-      ],
-    }));
+    // Create a new product object
+    const newProduct = {
+      productName: "",
+      quantity: 1,
+      unitPrice: 0,
+      amount: 0,
+    };
+    const updatedProducts = [...formData.products, newProduct];
+    setFormData({
+      ...formData,
+      products: updatedProducts,
+    });
   };
 
   const handleRemoveProduct = (index) => {
@@ -339,7 +338,7 @@ const EntryForm = () => {
                 ➕ Add New Customer
               </option>
               {customers.map((customer) => (
-                <option key={customer.id} value={customer.firstName}>
+                <option key={customer._id} value={customer.firstName}>
                   {customer.firstName}
                 </option>
               ))}
@@ -368,7 +367,7 @@ const EntryForm = () => {
                 >
                   <option value="">Select Product</option>
                   {products.map((prod) => (
-                    <option key={prod.id} value={prod.name}>
+                    <option key={prod._id} value={prod.name}>
                       {prod.name}
                     </option>
                   ))}

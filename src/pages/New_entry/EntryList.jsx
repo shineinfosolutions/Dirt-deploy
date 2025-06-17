@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import { RiNewspaperLine } from "react-icons/ri";
+import QrSection from "../QrSection";
 
 const EntryList = () => {
   const [entries, setEntries] = useState([]);
@@ -190,7 +191,7 @@ const EntryList = () => {
                       </Link>
 
                       <Link
-                        to={`#`}
+                        to={`/qr-tags/${entry._id}`}
                         className="text-sm text-[#7f59c5] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
                       >
                         <RiNewspaperLine />
