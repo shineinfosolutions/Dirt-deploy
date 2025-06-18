@@ -106,7 +106,7 @@ const QrSection = () => {
               {/* Details */}
               <div className="text-center w-full">
                 <p className="font-bold text-lg">{entry.receiptNo || "N/A"}</p>
-                <p className="text-gray-700">{entry.customer}</p>
+                <p className="text-gray-700 text-xl">{entry.customer}</p>
                 <div className="flex items-center justify-center gap-2 px-2">
                   <p className="text-gray-800 font-medium">{tag.productName}</p>
                   <p className="text-gray-600 text-2xl">
