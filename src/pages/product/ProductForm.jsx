@@ -9,7 +9,7 @@ const ProductForm = () => {
 
   const [formData, setFormData] = useState({
     name: "",
-    ServiceCharge: [{ service: "", charge: "" }],
+    ServiceCharge: [{ service: "", charge: "", tax: 0 }],
   });
 
   const [allServices, setAllServices] = useState([]);
@@ -19,7 +19,7 @@ const ProductForm = () => {
     const fetchServices = async () => {
       try {
         const res = await axios.get(
-          "https://dirt-off-backend.vercel.app/service"
+          "https://dirt-off-backend-main.vercel.app/service"
         );
         setAllServices(res.data.data);
       } catch (err) {
@@ -35,7 +35,7 @@ const ProductForm = () => {
         setLoading(true);
         try {
           const res = await axios.get(
-            `https://dirt-off-backend.vercel.app/product/${id}`
+            `https://dirt-off-backend-main.vercel.app/product/${id}`
           );
           setFormData(res.data.data);
         } catch (err) {
@@ -58,17 +58,23 @@ const ProductForm = () => {
   const handleServiceChargeChange = (index, e) => {
     const { name, value } = e.target;
     const updated = [...formData.ServiceCharge];
+
+    // Update the field with the new value
     updated[index][name] = value;
+
     setFormData((prev) => ({
       ...prev,
       ServiceCharge: updated,
     }));
   };
-
+  // Add this function
   const addServiceCharge = () => {
     setFormData((prev) => ({
       ...prev,
-      ServiceCharge: [...prev.ServiceCharge, { service: "", charge: "" }],
+      ServiceCharge: [
+        ...prev.ServiceCharge,
+        { service: "", charge: "", tax: 0 },
+      ],
     }));
   };
 
@@ -85,8 +91,8 @@ const ProductForm = () => {
     e.preventDefault();
     setLoading(true);
     const url = id
-      ? `https://dirt-off-backend.vercel.app/product/update/${id}`
-      : "https://dirt-off-backend.vercel.app/product/create";
+      ? `https://dirt-off-backend-main.vercel.app/product/update/${id}`
+      : "https://dirt-off-backend-main.vercel.app/product/create";
     const method = id ? "put" : "post";
 
     try {
@@ -120,72 +126,169 @@ const ProductForm = () => {
           {id ? "Edit Product" : "Add Product"}
         </h2>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium text-[#a997cb]">
-            Product Name
-          </label>
-          <input
-            name="name"
-            type="text"
-            value={formData.name}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-          />
+        {/* Product name and first service in one row */}
+        <div className="grid grid-cols-1 sm:grid-col gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-[#a997cb]">
+              Product Name
+            </label>
+            <input
+              name="name"
+              type="text"
+              value={formData.name}
+              onChange={handleChange}
+              required
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+
+          {/* <div>
+            <label className="block text-sm font-medium text-[#a997cb]">
+              Service
+            </label>
+            <input
+              list={`services-list-0`}
+              name="service"
+              value={formData.ServiceCharge[0].service}
+              onChange={(e) => handleServiceChargeChange(0, e)}
+              required
+              placeholder="Select or type a service"
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+            <datalist id={`services-list-0`}>
+              {allServices.map((service) => (
+                <option key={service._id} value={service.serviceName} />
+              ))}
+            </datalist>
+          </div> */}
         </div>
 
+        {/* Charge for first service */}
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label className="block text-sm font-medium text-[#a997cb]">
+              Tax
+            </label>
+            <input
+              name="tax"
+              type="number"
+              value={formData.ServiceCharge[0].tax || 0}
+              onChange={(e) => handleServiceChargeChange(0, e)}
+              placeholder="Tax percentage"
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-[#a997cb]">
+              Charge
+            </label>
+            <input
+              name="charge"
+              type="number"
+              value={formData.ServiceCharge[0].charge}
+              onChange={(e) => handleServiceChargeChange(0, e)}
+              required
+              placeholder="Amount"
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+            />
+          </div>
+        </div>
+
+        {/* Additional services */}
+        {/* Additional services */}
         <div className="space-y-4">
-          {formData.ServiceCharge.map((item, index) => (
-            <div
-              key={index}
-              className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-end"
-            >
-              <div>
-                <label className="block text-sm font-medium text-[#a997cb]">
-                  Service
-                </label>
-                <input
-                  list={`services-list-${index}`}
-                  name="service"
-                  value={item.service}
-                  onChange={(e) => handleServiceChargeChange(index, e)}
-                  required
-                  placeholder="Select or type a service"
-                  className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                />
-                <datalist id={`services-list-${index}`}>
-                  {allServices.map((service) => (
-                    <option key={service._id} value={service.serviceName} />
-                  ))}
-                </datalist>
-              </div>
+          {formData.ServiceCharge.slice(1).map((item, index) => {
+            // Adjust index to account for the first service being handled separately
+            const actualIndex = index + 1;
+            return (
+              <div key={actualIndex} className="border-t pt-4">
+                {/* Service row */}
+                <div className="grid grid-cols-1 sm:grid-col gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#a997cb]">
+                      Product Name
+                    </label>
+                    <input
+                      name="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={handleChange}
+                      required
+                      className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    />
+                  </div>
+                  {/* <div>
+                    <label className="block text-sm font-medium text-[#a997cb]">
+                      Service
+                    </label>
+                    <input
+                      list={`services-list-${actualIndex}`}
+                      name="service"
+                      value={item.service}
+                      onChange={(e) =>
+                        handleServiceChargeChange(actualIndex, e)
+                      }
+                      required
+                      placeholder="Select or type a service"
+                      className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    />
+                    <datalist id={`services-list-${actualIndex}`}>
+                      {allServices.map((service) => (
+                        <option key={service._id} value={service.serviceName} />
+                      ))}
+                    </datalist>
+                  </div> */}
+                </div>
 
-              <div>
-                <label className="block text-sm font-medium text-[#a997cb]">
-                  Charge
-                </label>
-                <input
-                  name="charge"
-                  type="number"
-                  value={item.charge}
-                  onChange={(e) => handleServiceChargeChange(index, e)}
-                  required
-                  placeholder="Amount"
-                  className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
-                />
-              </div>
+                {/* Tax and charge row */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#a997cb]">
+                      Tax
+                    </label>
+                    <input
+                      name="tax"
+                      type="number"
+                      value={item.tax || 0}
+                      onChange={(e) =>
+                        handleServiceChargeChange(actualIndex, e)
+                      }
+                      placeholder="Tax percentage"
+                      className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    />
+                  </div>
 
-              {formData.ServiceCharge.length > 1 && (
-                <button
-                  type="button"
-                  onClick={() => removeServiceCharge(index)}
-                  className="text-red-500 text-sm hover:underline"
-                >
-                  Remove
-                </button>
-              )}
-            </div>
-          ))}
+                  <div>
+                    <label className="block text-sm font-medium text-[#a997cb]">
+                      Charge
+                    </label>
+                    <input
+                      name="charge"
+                      type="number"
+                      value={item.charge}
+                      onChange={(e) =>
+                        handleServiceChargeChange(actualIndex, e)
+                      }
+                      required
+                      placeholder="Amount"
+                      className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+                    />
+                  </div>
+                </div>
+                <div className="flex items-end justify-end">
+                  <button
+                    type="button"
+                    onClick={() => removeServiceCharge(actualIndex)}
+                    className="text-red-500 text-sm hover:underline"
+                  >
+                    Remove
+                  </button>
+                </div>
+              </div>
+            );
+          })}
 
           <button
             type="button"

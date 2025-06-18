@@ -23,7 +23,7 @@ const EntryList = () => {
     setIsSearching(false);
     try {
       const res = await axios.get(
-        `https://dirt-off-backend.vercel.app/entry/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend-main.vercel.app/entry/pagination?page=${pageNumber}&limit=${limit}`
       );
       setEntries(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -44,7 +44,7 @@ const EntryList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-backend.vercel.app/entry/search?q=${searchQuery}`
+        `https://dirt-off-backend-main.vercel.app/entry/search?q=${searchQuery}`
       );
       setEntries(res.data.data || []);
       setTotalPages(1); // disable pagination for search
@@ -68,7 +68,7 @@ const EntryList = () => {
 
     try {
       await axios.delete(
-        `https://dirt-off-backend.vercel.app/entry/delete/${id}`
+        `https://dirt-off-backend-main.vercel.app/entry/delete/${id}`
       );
       toast.success("Entry deleted successfully");
       if (isSearching) {

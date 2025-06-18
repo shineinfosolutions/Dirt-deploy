@@ -50,7 +50,7 @@ const QrSection = () => {
 
       try {
         const res = await axios.get(
-          `https://dirt-off-backend.vercel.app/entry/${id}`
+          `https://dirt-off-backend-main.vercel.app/entry/${id}`
         );
         console.log("Entry data:", res.data.data);
         console.log("Products:", res.data.data.products);

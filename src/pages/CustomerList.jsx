@@ -10,7 +10,7 @@ const CustomerList = () => {
     const fetchCustomers = async () => {
       try {
         const res = await axios.get(
-          "https://dirt-off-backend.vercel.app/customer/all"
+          "https://dirt-off-backend-main.vercel.app/customer/all"
         );
         setCustomers(res.data.data);
       } catch (err) {

@@ -39,7 +39,7 @@ const EntryForm = () => {
     // const fetchServices = async () => {
     //   try {
     //     const res = await axios.get(
-    //       "https://dirt-off-backend.vercel.app/service"
+    //       "https://dirt-off-backend-main.vercel.app/service"
     //     );
     //     if (Array.isArray(res.data.data)) setServices(res.data.data);
     //   } catch {
@@ -50,7 +50,7 @@ const EntryForm = () => {
     const fetchCustomers = async () => {
       try {
         const res = await axios.get(
-          "https://dirt-off-backend.vercel.app/custdirt"
+          "https://dirt-off-backend-main.vercel.app/custdirt"
         );
         if (Array.isArray(res.data.data)) setCustomers(res.data.data);
       } catch {
@@ -61,7 +61,7 @@ const EntryForm = () => {
     const fetchProducts = async () => {
       try {
         const res = await axios.get(
-          "https://dirt-off-backend.vercel.app/product"
+          "https://dirt-off-backend-main.vercel.app/product"
         );
         if (Array.isArray(res.data.data)) setProducts(res.data.data);
       } catch {
@@ -82,7 +82,7 @@ const EntryForm = () => {
       setLoading(true);
       try {
         const res = await axios.get(
-          `https://dirt-off-backend.vercel.app/entry/${id}`
+          `https://dirt-off-backend-main.vercel.app/entry/${id}`
         );
         const entryData = res.data.data;
 
@@ -115,7 +115,7 @@ const EntryForm = () => {
   const handleAddCustomer = async (newCustomer) => {
     try {
       const res = await axios.post(
-        "https://dirt-off-backend.vercel.app/custdirt/create",
+        "https://dirt-off-backend-main.vercel.app/custdirt/create",
         newCustomer
       );
       const addedCustomer = res.data.data;
@@ -266,8 +266,8 @@ const EntryForm = () => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-backend.vercel.app/entry/update/${id}`
-      : "https://dirt-off-backend.vercel.app/entry/create";
+      ? `https://dirt-off-backend-main.vercel.app/entry/update/${id}`
+      : "https://dirt-off-backend-main.vercel.app/entry/create";
     const method = id ? "put" : "post";
 
     try {
@@ -468,8 +468,19 @@ const EntryForm = () => {
             <input
               type="number"
               value={formData.charges.taxAmount}
-              readOnly
-              className="w-full border px-3 py-2 rounded bg-gray-100"
+              onChange={(e) => {
+                const taxAmount = parseFloat(e.target.value) || 0;
+                const totalAmount = formData.charges.subtotal + taxAmount;
+                setFormData((prev) => ({
+                  ...prev,
+                  charges: {
+                    ...prev.charges,
+                    taxAmount,
+                    totalAmount,
+                  },
+                }));
+              }}
+              className="w-full border px-3 py-2 rounded"
             />
           </div>
           <div>

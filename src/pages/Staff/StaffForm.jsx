@@ -22,7 +22,7 @@ const StaffForm = () => {
         setLoading(true);
         try {
           const res = await axios.get(
-            `https://dirt-off-backend.vercel.app/staff/${id}`
+            `https://dirt-off-backend-main.vercel.app/staff/${id}`
           );
           setFormData(res.data.data);
         } catch (err) {
@@ -47,8 +47,8 @@ const StaffForm = () => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-backend.vercel.app/staff/update/${id}`
-      : "https://dirt-off-backend.vercel.app/staff/create";
+      ? `https://dirt-off-backend-main.vercel.app/staff/update/${id}`
+      : "https://dirt-off-backend-main.vercel.app/staff/create";
 
     const method = id ? "put" : "post";
 

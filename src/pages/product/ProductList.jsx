@@ -18,7 +18,7 @@ const ProductList = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-backend.vercel.app/product/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend-main.vercel.app/product/pagination?page=${pageNumber}&limit=${limit}`
       );
       setProducts(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -35,7 +35,7 @@ const ProductList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-backend.vercel.app/product/search?q=${searchQuery}`
+        `https://dirt-off-backend-main.vercel.app/product/search?q=${searchQuery}`
       );
       setProducts(res.data.data || []);
     } catch (err) {
@@ -57,7 +57,7 @@ const ProductList = () => {
 
     try {
       await axios.delete(
-        `https://dirt-off-backend.vercel.app/product/delete/${id}`
+        `https://dirt-off-backend-main.vercel.app/product/delete/${id}`
       );
       toast.success("Product deleted successfully");
       fetchProducts(page);
@@ -131,9 +131,8 @@ const ProductList = () => {
                 <tr>
                   <th className=" px-4 py-2 border  text-center">S No.</th>
                   <th className="text-left px-4 py-2 border">Product Name</th>
-                  <th className="text-left px-4 py-2 border">
-                    Service & Charge
-                  </th>
+                  <th className="text-left px-4 py-2 border">Charge</th>
+                  <th className="text-left px-4 py-2 border">Tax</th>
                   <th className="text-center px-4 py-2 border">Actions</th>
                 </tr>
               </thead>

@@ -25,7 +25,7 @@ const CustomerForm = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
         setLoading(true);
         try {
           const res = await axios.get(
-            `https://dirt-off-backend.vercel.app/custdirt/${id}`
+            `https://dirt-off-backend-main.vercel.app/custdirt/${id}`
           );
           setFormData(res.data.data);
         } catch (err) {
@@ -50,8 +50,8 @@ const CustomerForm = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
   //   setLoading(true);
 
   //   const url = id
-  //     ? `https://dirt-off-backend.vercel.app/custdirt/update/${id}`
-  //     : "https://dirt-off-backend.vercel.app/custdirt/create";
+  //     ? `https://dirt-off-backend-main.vercel.app/custdirt/update/${id}`
+  //     : "https://dirt-off-backend-main.vercel.app/custdirt/create";
 
   //   const method = id ? "put" : "post";
 

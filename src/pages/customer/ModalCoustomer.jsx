@@ -25,7 +25,7 @@ const ModalCustomer = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
         setLoading(true);
         try {
           const res = await axios.get(
-            `https://dirt-off-backend.vercel.app/custdirt/${id}`
+            `https://dirt-off-backend-main.vercel.app/custdirt/${id}`
           );
           setFormData(res.data.data);
         } catch (err) {

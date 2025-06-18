@@ -15,7 +15,7 @@ const LaundryBill = () => {
     const fetchBillData = async () => {
       try {
         const res = await axios.get(
-          `https://dirt-off-backend.vercel.app/entry/${id}`
+          `https://dirt-off-backend-main.vercel.app/entry/${id}`
         );
         const entry = res.data.data;
         setBillData(entry);
@@ -23,7 +23,7 @@ const LaundryBill = () => {
         // Now fetch customer details by customerId
         if (entry.customerId) {
           const customerRes = await axios.get(
-            `https://dirt-off-backend.vercel.app/custdirt/${entry.customerId}`
+            `https://dirt-off-backend-main.vercel.app/custdirt/${entry.customerId}`
           );
           setCustomerInfo(customerRes.data.data);
         }

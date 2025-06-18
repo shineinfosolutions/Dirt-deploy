@@ -18,7 +18,7 @@ const CustomerList = () => {
     setLoading(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-backend.vercel.app/custdirt/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend-main.vercel.app/custdirt/pagination?page=${pageNumber}&limit=${limit}`
       );
       setCustomers(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -35,7 +35,7 @@ const CustomerList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `https://dirt-off-backend.vercel.app/custdirt/search?q=${searchQuery}`
+        `https://dirt-off-backend-main.vercel.app/custdirt/search?q=${searchQuery}`
       );
       setCustomers(res.data.data || []);
       setLoading(false);
@@ -59,7 +59,7 @@ const CustomerList = () => {
 
     try {
       await axios.delete(
-        `https://dirt-off-backend.vercel.app/custdirt/delete/${id}`
+        `https://dirt-off-backend-main.vercel.app/custdirt/delete/${id}`
       );
       toast.success("Customer deleted successfully");
       fetchCustomers(page);

@@ -27,7 +27,7 @@ const LaundryInvoiceForm = ({ customerId }) => {
     const fetchCustomers = async () => {
       try {
         const response = await axios.get(
-          "https://dirt-off-backend.vercel.app/invoice/all"
+          "https://dirt-off-backend-main.vercel.app/invoice/all"
         );
         setCustomers(response.data); // Assuming response.data contains an array of customers
       } catch (error) {
@@ -82,7 +82,7 @@ const LaundryInvoiceForm = ({ customerId }) => {
 
     try {
       const response = await axios.post(
-        "https://dirt-off-backend.vercel.app/invoice/create",
+        "https://dirt-off-backend-main.vercel.app/invoice/create",
         payload
       );
       alert("Invoice created successfully!");

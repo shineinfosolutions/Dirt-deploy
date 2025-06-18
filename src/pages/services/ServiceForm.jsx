@@ -21,7 +21,7 @@ const ServiceForm = () => {
         setLoading(true);
         try {
           const res = await axios.get(
-            `https://dirt-off-backend.vercel.app/service/${id}`
+            `https://dirt-off-backend-main.vercel.app/service/${id}`
           );
           setFormData(res.data.data);
         } catch (err) {
@@ -46,8 +46,8 @@ const ServiceForm = () => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-backend.vercel.app/service/update/${id}`
-      : "https://dirt-off-backend.vercel.app/service/create";
+      ? `https://dirt-off-backend-main.vercel.app/service/update/${id}`
+      : "https://dirt-off-backend-main.vercel.app/service/create";
 
     const method = id ? "put" : "post";
 
