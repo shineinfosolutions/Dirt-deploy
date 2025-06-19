@@ -11,7 +11,7 @@ const EntryForm = () => {
   const [formData, setFormData] = useState({
     customer: "",
     customerId: "",
-    // service: "",
+    status: "pending",
     products: [
       { productName: "", quantity: 1, unitPrice: 0, amount: 0, taxPer: 0 },
     ],
@@ -22,6 +22,8 @@ const EntryForm = () => {
       deliveryType: "Self",
       pickupAddress: "",
       deliveryAddress: "",
+      pickupDate: "",
+      expectedDeliveryDate: "",
     },
   });
   const services = [];
@@ -250,10 +252,8 @@ const EntryForm = () => {
         return;
       }
 
-      // Find customer by name
       const selectedCustomer = customers.find((c) => c.firstName === value);
 
-      // Update form data with customer info
       setFormData((prev) => ({
         ...prev,
         customer: value,
@@ -264,7 +264,12 @@ const EntryForm = () => {
           deliveryAddress: selectedCustomer?.address || "",
         },
       }));
-    } else if (name === "pickupType" || name === "deliveryType") {
+    } else if (
+      name === "pickupType" ||
+      name === "deliveryType" ||
+      name === "pickupDate" ||
+      name === "expectedDeliveryDate"
+    ) {
       setFormData((prev) => ({
         ...prev,
         pickupAndDelivery: {
@@ -567,6 +572,18 @@ const EntryForm = () => {
                 />
               </div>
             )}
+            <div className="mt-2">
+              <label className="block text-sm text-gray-600 mb-1">
+                Pickup Date
+              </label>
+              <input
+                type="date"
+                name="pickupDate"
+                value={formData.pickupAndDelivery.pickupDate || ""}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+              />
+            </div>
           </div>
 
           <div>
@@ -599,22 +616,49 @@ const EntryForm = () => {
                 />
               </div>
             )}
+            <div className="mt-2">
+              <label className="block text-sm text-gray-600 mb-1">
+                Delivery Date
+              </label>
+              <input
+                type="date"
+                name="deliveryDate"
+                value={formData.pickupAndDelivery.expectedDeliveryDate || ""}
+                onChange={handleChange}
+                className="w-full border px-3 py-2 rounded"
+              />
+            </div>
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={loading}
-          className={`px-6 py-2 rounded text-white transition
-    ${
-      loading
-        ? "bg-theme-purple/60 cursor-not-allowed"
-        : "bg-theme-purple hover:bg-theme-purple-dark cursor-pointer"
-    }
-    disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {loading ? "Saving..." : id ? "Update Entry" : "Add Entry"}
-        </button>
+        <div className="flex items-center gap-4">
+          <div>
+            <select
+              name="status"
+              value={formData.status || "pending"}
+              onChange={handleChange}
+              className="border px-3 py-2 rounded text-sm"
+            >
+              <option value="pending">Pending</option>
+              <option value="delivered">Delivered</option>
+              <option value="collected">Collected</option>
+            </select>
+          </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className={`px-6 py-2 rounded text-white transition
+      ${
+        loading
+          ? "bg-theme-purple/60 cursor-not-allowed"
+          : "bg-theme-purple hover:bg-theme-purple-dark cursor-pointer"
+      }
+      disabled:opacity-50 disabled:cursor-not-allowed`}
+          >
+            {loading ? "Saving..." : id ? "Update Entry" : "Add Entry"}
+          </button>
+        </div>
       </form>
     </div>
   );
