@@ -24,6 +24,7 @@ import ServiceList from "./pages/services/ServiceList";
 import EntryForm from "./pages/New_entry/EntryForm";
 import EntryList from "./pages/New_entry/EntryList";
 import QrSection from "./pages/QrSection"; // If you chose option 1
+import Dashboard from "./pages/dashboard/Dashboard";
 
 const App = () => {
   const navigate = useNavigate();
@@ -130,7 +131,7 @@ const App = () => {
                 <li
                   onClick={() => {
                     setActiveLink("dashboard");
-                    navigate("/");
+                    navigate("/Dashboard");
                     setMl();
                   }}
                 >
@@ -570,7 +571,8 @@ const App = () => {
 
             <div className="px-6 pt-6 bg-white">
               <Routes>
-                <Route path="/" element={<Home />} />
+                <Route path="/dashboard" element={<Dashboard />} />
+
                 <Route path="/LaundryBill" element={<LaundryBill />} />
                 <Route path="/LaundryBill/:id" element={<LaundryBill />} />
                 <Route path="/CustomerForm" element={<CustomerForm />} />

@@ -147,11 +147,20 @@ const ProductList = () => {
                     <td className="px-4 py-2 border">
                       {prod.ServiceCharge.map((sc, idx) => (
                         <span key={idx}>
-                          {sc.service} - ₹{sc.charge}
+                          ₹{sc.charge}
                           {idx < prod.ServiceCharge.length - 1 && ", "}
                         </span>
                       ))}
                     </td>
+                    <td className="px-4 py-2 border">
+                      {prod.ServiceCharge.map((sc, idx) => (
+                        <span key={idx}>
+                          {prod.tax || 0}%
+                          {idx < prod.ServiceCharge.length - 1 && ", "}
+                        </span>
+                      ))}
+                    </td>
+
                     <td className="px-4 py-2 border text-center">
                       <Link
                         to={`/productform/${prod._id}`}

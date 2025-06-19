@@ -59,14 +59,19 @@ const ProductForm = () => {
     const { name, value } = e.target;
     const updated = [...formData.ServiceCharge];
 
-    // Update the field with the new value
-    updated[index][name] = value;
+    // Convert tax to number
+    if (name === "tax") {
+      updated[index][name] = parseFloat(value) || 0;
+    } else {
+      updated[index][name] = value;
+    }
 
     setFormData((prev) => ({
       ...prev,
       ServiceCharge: updated,
     }));
   };
+
   // Add this function
   const addServiceCharge = () => {
     setFormData((prev) => ({
@@ -90,13 +95,25 @@ const ProductForm = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+
+    // Create a deep copy of formData with tax values converted to numbers
+    const dataToSubmit = {
+      name: formData.name,
+      ServiceCharge: formData.ServiceCharge.map((item) => ({
+        service: item.service,
+        charge: parseFloat(item.charge) || 0,
+        tax: parseFloat(item.tax) || 0, // Include tax for each service charge
+      })),
+      tax: parseFloat(formData.ServiceCharge[0].tax) || 0, // Keep the top-level tax
+    };
+
     const url = id
       ? `https://dirt-off-backend-main.vercel.app/product/update/${id}`
       : "https://dirt-off-backend-main.vercel.app/product/create";
     const method = id ? "put" : "post";
 
     try {
-      await axios[method](url, formData);
+      await axios[method](url, dataToSubmit);
       toast.success(
         id ? "Product updated successfully!" : "Product added successfully!"
       );
@@ -173,7 +190,7 @@ const ProductForm = () => {
             <input
               name="tax"
               type="number"
-              value={formData.ServiceCharge[0].tax || 0}
+              value={formData.tax}
               onChange={(e) => handleServiceChargeChange(0, e)}
               placeholder="Tax percentage"
               className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"

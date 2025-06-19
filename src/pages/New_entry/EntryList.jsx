@@ -88,7 +88,7 @@ const EntryList = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-10">
+    <div className="max-w-6xl mx-auto px-4 py-4">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-[#a997cb]">New Entries</h2>
         <Link
@@ -163,39 +163,47 @@ const EntryList = () => {
                       ₹ {entry.charges?.totalAmount?.toFixed(2)}
                     </td>
                     <td className="px-4 py-2 border">
-                      {entry.pickupAndDelivery?.pickupType}
+                      {entry.pickupAndDelivery?.pickupType === "Self"
+                        ? "Self"
+                        : entry.pickupAndDelivery?.pickupAddress ||
+                          entry.pickupAndDelivery?.pickupType}
                     </td>
                     <td className="px-4 py-2 border">
-                      {entry.pickupAndDelivery?.deliveryType}
+                      {entry.pickupAndDelivery?.deliveryType === "Self"
+                        ? "Self"
+                        : entry.pickupAndDelivery?.deliveryAddress ||
+                          entry.pickupAndDelivery?.deliveryType}
                     </td>
                     <td className="px-4 py-2 border text-center">
-                      <Link
-                        to={`/entryform/${entry._id}`}
-                        className="text-sm text-[#a997cb] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
-                      >
-                        <FaEdit />
-                      </Link>
+                      <div className="flex justify-around items-center">
+                        <Link
+                          to={`/entryform/${entry._id}`}
+                          className="text-sm text-[#a997cb] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
+                        >
+                          <FaEdit />
+                        </Link>
 
-                      <button
-                        onClick={() => handleDelete(entry._id)}
-                        className="text-sm text-red-600 hover:underline"
-                      >
-                        <FaTrashAlt />
-                      </button>
+                        <button
+                          onClick={() => handleDelete(entry._id)}
+                          className="text-sm text-red-600 hover:underline"
+                        >
+                          <FaTrashAlt />
+                        </button>
 
-                      <Link
-                        to={`/LaundryBill/${entry._id}`}
-                        className="text-sm pl-3 text-[#a997cb] hover:text-[#8a82b5] hover:underline mr-4"
-                      >
-                        View
-                      </Link>
+                        <Link
+                          to={`/LaundryBill/${entry._id}`}
+                          className="text-sm pl-3 text-[#a997cb] hover:text-[#8a82b5] hover:underline mr-4"
+                        >
+                          View
+                        </Link>
 
-                      <Link
-                        to={`/qr-tags/${entry._id}`}
-                        className="text-sm text-[#7f59c5] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
-                      >
-                        <RiNewspaperLine />
-                      </Link>
+                        <Link
+                          to={`/qr-tags/${entry._id}`}
+                          className="text-sm text-[#7f59c5] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
+                        >
+                          <RiNewspaperLine />
+                        </Link>
+                      </div>
                     </td>
                   </tr>
                 ))}

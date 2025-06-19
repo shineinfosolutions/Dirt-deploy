@@ -12,7 +12,9 @@ const EntryForm = () => {
     customer: "",
     customerId: "",
     // service: "",
-    products: [{ productName: "", quantity: 1, unitPrice: 0, amount: 0 }],
+    products: [
+      { productName: "", quantity: 1, unitPrice: 0, amount: 0, taxPer: 0 },
+    ],
     charges: { subtotal: 0, taxAmount: 0, totalAmount: 0 },
     taxPercent: 0,
     pickupAndDelivery: {
@@ -86,23 +88,20 @@ const EntryForm = () => {
         );
         const entryData = res.data.data;
 
-        // Calculate charges directly
-        const subtotal = entryData.products.reduce(
-          (acc, p) => acc + p.amount,
-          0
-        );
-        const taxPercent = entryData.taxPercent || 0; // Define taxPercent here
-        const taxAmount = parseFloat(
-          ((subtotal * taxPercent) / 100).toFixed(2)
-        );
-        const totalAmount = subtotal + taxAmount;
+        // Map products to include taxPer from the tax field
+        const productsWithTax = entryData.products.map((p) => ({
+          ...p,
+          taxPer: p.tax || 0,
+        }));
 
+        // Use the charges directly from the API response
         setFormData({
           ...entryData,
-          taxPercent,
-          charges: { subtotal, taxAmount, totalAmount },
+          products: productsWithTax,
+          // No need to recalculate charges as they're already in the response
         });
-      } catch {
+      } catch (err) {
+        console.error(err);
         toast.error("Failed to load entry");
       } finally {
         setLoading(false);
@@ -139,11 +138,21 @@ const EntryForm = () => {
     }
   };
 
-  const recalculateCharges = (products, taxPercent) => {
+  const recalculateCharges = (products) => {
     const subtotal = products.reduce((acc, p) => acc + p.amount, 0);
-    const taxAmount = parseFloat(((subtotal * taxPercent) / 100).toFixed(2));
+
+    // Calculate tax amount based on each product's tax percentage and amount
+    const taxAmount = products.reduce((acc, p) => {
+      const productTaxAmount = (p.amount * (p.taxPer || 0)) / 100;
+      return acc + productTaxAmount;
+    }, 0);
+
     const totalAmount = subtotal + taxAmount;
-    return { subtotal, taxAmount, totalAmount };
+    return {
+      subtotal: parseFloat(subtotal.toFixed(2)),
+      taxAmount: parseFloat(taxAmount.toFixed(2)),
+      totalAmount: parseFloat(totalAmount.toFixed(2)),
+    };
   };
 
   const handleProductChange = (index, field, value) => {
@@ -153,13 +162,23 @@ const EntryForm = () => {
     if (field === "productName") {
       const productData = products.find((p) => p.name === value);
       const defaultCharge = productData?.ServiceCharge?.[0]?.charge || 0;
+      const productTax = productData?.tax || 0; // Get the tax from the product
 
       selectedProduct = {
         ...selectedProduct,
         productName: value,
         unitPrice: defaultCharge,
         amount: selectedProduct.quantity * defaultCharge,
+        taxPer: productTax,
       };
+      setFormData((prev) => ({
+        ...prev,
+        taxPercent: productTax,
+        charges: recalculateCharges(
+          prev.products.map((p, i) => (i === index ? selectedProduct : p)),
+          productTax
+        ),
+      }));
     } else if (field === "unitPrice" || field === "quantity") {
       selectedProduct = {
         ...selectedProduct,
@@ -167,6 +186,12 @@ const EntryForm = () => {
       };
       selectedProduct.amount =
         selectedProduct.quantity * selectedProduct.unitPrice;
+    } else if (field === "taxPer") {
+      // Add explicit handling for tax changes
+      selectedProduct = {
+        ...selectedProduct,
+        taxPer: parseFloat(value) || 0,
+      };
     }
 
     newProducts[index] = selectedProduct;
@@ -201,6 +226,7 @@ const EntryForm = () => {
       quantity: 1,
       unitPrice: 0,
       amount: 0,
+      taxPer: 0,
     };
     const updatedProducts = [...formData.products, newProduct];
     setFormData({
@@ -432,6 +458,29 @@ const EntryForm = () => {
                 />
               </div>
               <div>
+                <label className="block text-sm text-gray-600 mb-1">
+                  Tax %
+                </label>
+                <input
+                  type="number"
+                  value={product.taxPer || 0}
+                  onChange={(e) => {
+                    const newProducts = [...formData.products];
+                    newProducts[index] = {
+                      ...product,
+                      taxPer: parseFloat(e.target.value) || 0,
+                    };
+                    const charges = recalculateCharges(newProducts);
+                    setFormData((prev) => ({
+                      ...prev,
+                      products: newProducts,
+                      charges,
+                    }));
+                  }}
+                  className="w-full border px-2 py-1 rounded"
+                />
+              </div>
+              <div>
                 <button
                   type="button"
                   onClick={() => handleRemoveProduct(index)}
@@ -465,23 +514,14 @@ const EntryForm = () => {
             <label className="block text-sm text-gray-600 mb-1">
               Tax Amount
             </label>
-            <input
-              type="number"
-              value={formData.charges.taxAmount}
-              onChange={(e) => {
-                const taxAmount = parseFloat(e.target.value) || 0;
-                const totalAmount = formData.charges.subtotal + taxAmount;
-                setFormData((prev) => ({
-                  ...prev,
-                  charges: {
-                    ...prev.charges,
-                    taxAmount,
-                    totalAmount,
-                  },
-                }));
-              }}
-              className="w-full border px-3 py-2 rounded"
-            />
+            <div className="flex items-center">
+              <input
+                type="number"
+                value={formData.charges.taxAmount}
+                readOnly
+                className="w-full border px-3 py-2 rounded bg-gray-100"
+              />
+            </div>
           </div>
           <div>
             <label className="block text-sm text-gray-600 mb-1">
