@@ -130,6 +130,8 @@ const EntryForm = () => {
           ...prev.pickupAndDelivery,
           pickupAddress: addedCustomer.address || "",
           deliveryAddress: addedCustomer.address || "",
+          pickupDate: new Date().toISOString().split("T")[0],
+          expectedDeliveryDate: new Date().toISOString().split("T")[0],
         },
       }));
 
@@ -572,7 +574,7 @@ const EntryForm = () => {
                 />
               </div>
             )}
-            <div className="mt-2">
+            {/* <div className="mt-2">
               <label className="block text-sm text-gray-600 mb-1">
                 Pickup Date
               </label>
@@ -583,7 +585,7 @@ const EntryForm = () => {
                 onChange={handleChange}
                 className="w-full border px-3 py-2 rounded"
               />
-            </div>
+            </div> */}
           </div>
 
           <div>
@@ -616,23 +618,23 @@ const EntryForm = () => {
                 />
               </div>
             )}
-            <div className="mt-2">
-              <label className="block text-sm text-gray-600 mb-1">
-                Delivery Date
-              </label>
-              <input
-                type="date"
-                name="deliveryDate"
-                value={formData.pickupAndDelivery.expectedDeliveryDate || ""}
-                onChange={handleChange}
-                className="w-full border px-3 py-2 rounded"
-              />
-            </div>
           </div>
+        </div>
+        <div className="mt-2 w-[50%]">
+          <label className="block text-sm text-gray-600 mb-1 ">
+            Expected Delivery Date
+          </label>
+          <input
+            type="date"
+            name="expectedDeliveryDate"
+            value={formData.pickupAndDelivery.expectedDeliveryDate || ""}
+            onChange={handleChange}
+            className="w-full border px-3 py-2 rounded"
+          />
         </div>
 
         <div className="flex items-center gap-4">
-          <div>
+          {/* <div>
             <select
               name="status"
               value={formData.status || "pending"}
@@ -643,7 +645,7 @@ const EntryForm = () => {
               <option value="delivered">Delivered</option>
               <option value="collected">Collected</option>
             </select>
-          </div>
+          </div> */}
 
           <button
             type="submit"

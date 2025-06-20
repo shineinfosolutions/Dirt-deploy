@@ -478,7 +478,7 @@ const App = () => {
                   </a>
                 </li>
               </ul>
-              <ul className="mt-4 space-y-2 tracking-wide">
+              {/* <ul className="mt-4 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("Services");
@@ -516,7 +516,7 @@ const App = () => {
                     <span className="-mr-1 font-medium">Services</span>
                   </a>
                 </li>
-              </ul>
+              </ul> */}
             </div>
 
             <div className="-mx-6 md:flex hidden items-center justify-between border-t px-6 pt-4 dark:border-gray-700">

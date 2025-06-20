@@ -28,22 +28,28 @@ const Dashboard = () => {
   });
 
   const [deliveryData, setDeliveryData] = useState({
-    pending: { orders: [] },
-    collected: { orders: [] },
-    delivered: { orders: [] },
-    todayExpectedDeliveries: { orders: [] },
-    todayReceivedOrders: { orders: [] },
+    pending: { orders: [], page: 1, totalPages: 1 },
+    collected: { orders: [], page: 1, totalPages: 1 },
+    delivered: { orders: [], page: 1, totalPages: 1 },
+    todayExpectedDeliveries: { orders: [], page: 1, totalPages: 1 },
+    todayReceivedOrders: { orders: [], page: 1, totalPages: 1 },
+  });
+
+  const [currentPages, setCurrentPages] = useState({
+    pending: 1,
+    collected: 1,
+    delivered: 1,
+    todayExpected: 1,
+    todayReceived: 1,
   });
 
   const [activeView, setActiveView] = useState("sales");
 
   // Fetch data from API
-  // Fetch data from API
-  // Update the fetchStats function in Dashboard.jsx
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        // Fetch sales stats first (this is working)
+        // Fetch sales stats
         const salesResponse = await axios.get(
           "https://dirt-off-backend-main.vercel.app/entry/stats/recent"
         );
@@ -60,55 +66,45 @@ const Dashboard = () => {
           weeklyData: salesData.weeklyData,
         });
 
-        // Set sales data immediately
-        setStats((prev) => ({
-          ...prev,
-          totalSales: totalSalesCalculated,
-        }));
+        // Fetch delivery summary
+        const summaryResponse = await axios.get(
+          "https://dirt-off-backend-main.vercel.app/entry/pending/deliveries"
+        );
+        const summary = summaryResponse.data.data.summary;
 
-        // Try delivery APIs individually to avoid complete failure
-        const deliveryTypes = [
+        // Update stats with summary data
+        setStats({
+          newOrders: summary.todayReceived.count || 0,
+          todayExpected: summary.todayExpected.count || 0,
+          pendingOrders: summary.pending.count || 0,
+          collectedOrders: summary.collected.count || 0,
+          deliveredOrders: summary.delivered.count || 0,
+          totalSales: totalSalesCalculated,
+        });
+
+        // Fetch detailed data in background
+        const types = [
           "pending",
           "collected",
           "delivered",
           "todayExpected",
           "todayReceived",
         ];
-        const deliveryResults = {};
-        const deliveryStats = {};
-
-        for (const type of deliveryTypes) {
+        types.forEach(async (type) => {
           try {
             const res = await axios.get(
-              `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=${type}`
+              `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=${type}&page=1`
             );
-            deliveryResults[type] = res.data.data;
-            deliveryStats[type] = res.data.data.count || 0;
+            const key =
+              type === "todayReceived"
+                ? "todayReceivedOrders"
+                : type === "todayExpected"
+                ? "todayExpectedDeliveries"
+                : type;
+            setDeliveryData((prev) => ({ ...prev, [key]: res.data.data }));
           } catch (error) {
-            console.error(`${type} API failed:`, error);
-            deliveryResults[type] = { orders: [], count: 0 };
-            deliveryStats[type] = 0;
+            console.error(`${type} background fetch failed:`, error);
           }
-        }
-
-        setDeliveryData({
-          pending: deliveryResults.pending || { orders: [] },
-          collected: deliveryResults.collected || { orders: [] },
-          delivered: deliveryResults.delivered || { orders: [] },
-          todayExpectedDeliveries: deliveryResults.todayExpected || {
-            orders: [],
-          },
-          todayReceivedOrders: deliveryResults.todayReceived || { orders: [] },
-        });
-
-        // Update all stats
-        setStats({
-          newOrders: deliveryStats.todayReceived || 0,
-          todayExpected: deliveryStats.todayExpected || 0,
-          pendingOrders: deliveryStats.pending || 0,
-          collectedOrders: deliveryStats.collected || 0,
-          deliveredOrders: deliveryStats.delivered || 0,
-          totalSales: totalSalesCalculated,
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -117,6 +113,31 @@ const Dashboard = () => {
 
     fetchStats();
   }, []);
+
+  const fetchDetailedData = async (type, page = 1) => {
+    try {
+      const res = await axios.get(
+        `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=${type}&page=${page}`
+      );
+      return res.data.data;
+    } catch (error) {
+      console.error(`${type} API failed:`, error);
+      return { orders: [], page: 1, totalPages: 1 };
+    }
+  };
+
+  const handlePageChange = async (type, newPage) => {
+    const data = await fetchDetailedData(type, newPage);
+    const key =
+      type === "todayReceived"
+        ? "todayReceivedOrders"
+        : type === "todayExpected"
+        ? "todayExpectedDeliveries"
+        : type;
+    setDeliveryData((prev) => ({ ...prev, [key]: data }));
+    setCurrentPages((prev) => ({ ...prev, [type]: newPage }));
+  };
+
   // Process data for charts
   const processWeeklyData = () => {
     return apiData.weeklyData.map((item) => item.totalSales);
@@ -183,6 +204,41 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
+            {deliveryData.todayReceivedOrders.totalPages > 1 && (
+              <div className="flex justify-center mt-4 space-x-2">
+                <button
+                  onClick={() =>
+                    handlePageChange(
+                      "todayReceived",
+                      currentPages.todayReceived - 1
+                    )
+                  }
+                  disabled={currentPages.todayReceived === 1}
+                  className="px-3 py-1 bg-purple-100 text-purple-600 rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1">
+                  {currentPages.todayReceived} of{" "}
+                  {deliveryData.todayReceivedOrders.totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    handlePageChange(
+                      "todayReceived",
+                      currentPages.todayReceived + 1
+                    )
+                  }
+                  disabled={
+                    currentPages.todayReceived ===
+                    deliveryData.todayReceivedOrders.totalPages
+                  }
+                  className="px-3 py-1 bg-purple-100 text-purple-600 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         );
 
@@ -223,6 +279,41 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
+            {deliveryData.todayExpectedDeliveries.totalPages > 1 && (
+              <div className="flex justify-center mt-4 space-x-2">
+                <button
+                  onClick={() =>
+                    handlePageChange(
+                      "todayExpected",
+                      currentPages.todayExpected - 1
+                    )
+                  }
+                  disabled={currentPages.todayExpected === 1}
+                  className="px-3 py-1 bg-blue-100 text-blue-600 rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1">
+                  {currentPages.todayExpected} of{" "}
+                  {deliveryData.todayExpectedDeliveries.totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    handlePageChange(
+                      "todayExpected",
+                      currentPages.todayExpected + 1
+                    )
+                  }
+                  disabled={
+                    currentPages.todayExpected ===
+                    deliveryData.todayExpectedDeliveries.totalPages
+                  }
+                  className="px-3 py-1 bg-blue-100 text-blue-600 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         );
 
@@ -263,6 +354,34 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
+            {deliveryData.delivered.totalPages > 1 && (
+              <div className="flex justify-center mt-4 space-x-2">
+                <button
+                  onClick={() =>
+                    handlePageChange("delivered", currentPages.delivered - 1)
+                  }
+                  disabled={currentPages.delivered === 1}
+                  className="px-3 py-1 bg-green-100 text-green-600 rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1">
+                  {currentPages.delivered} of{" "}
+                  {deliveryData.delivered.totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    handlePageChange("delivered", currentPages.delivered + 1)
+                  }
+                  disabled={
+                    currentPages.delivered === deliveryData.delivered.totalPages
+                  }
+                  className="px-3 py-1 bg-green-100 text-green-600 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         );
 
@@ -298,10 +417,36 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
+            {deliveryData.pending.totalPages > 1 && (
+              <div className="flex justify-center mt-4 space-x-2">
+                <button
+                  onClick={() =>
+                    handlePageChange("pending", currentPages.pending - 1)
+                  }
+                  disabled={currentPages.pending === 1}
+                  className="px-3 py-1 bg-yellow-100 text-yellow-600 rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1">
+                  {currentPages.pending} of {deliveryData.pending.totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    handlePageChange("pending", currentPages.pending + 1)
+                  }
+                  disabled={
+                    currentPages.pending === deliveryData.pending.totalPages
+                  }
+                  className="px-3 py-1 bg-yellow-100 text-yellow-600 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         );
 
-      // Add this case after the "pending" case in renderContent
       case "collected":
         return (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
@@ -339,6 +484,34 @@ const Dashboard = () => {
                 </div>
               )}
             </div>
+            {deliveryData.collected.totalPages > 1 && (
+              <div className="flex justify-center mt-4 space-x-2">
+                <button
+                  onClick={() =>
+                    handlePageChange("collected", currentPages.collected - 1)
+                  }
+                  disabled={currentPages.collected === 1}
+                  className="px-3 py-1 bg-orange-100 text-orange-600 rounded disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span className="px-3 py-1">
+                  {currentPages.collected} of{" "}
+                  {deliveryData.collected.totalPages}
+                </span>
+                <button
+                  onClick={() =>
+                    handlePageChange("collected", currentPages.collected + 1)
+                  }
+                  disabled={
+                    currentPages.collected === deliveryData.collected.totalPages
+                  }
+                  className="px-3 py-1 bg-orange-100 text-orange-600 rounded disabled:opacity-50"
+                >
+                  Next
+                </button>
+              </div>
+            )}
           </div>
         );
 
@@ -352,7 +525,6 @@ const Dashboard = () => {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-              {/* Weekly Sales Graph */}
               {/* Weekly Sales Graph */}
               <div>
                 <h4 className="text-md font-semibold text-gray-700 mb-4">
@@ -591,20 +763,6 @@ const Dashboard = () => {
                       />
                     ))}
 
-                    {/* Y-axis labels */}
-                    {/* {[700, 600, 500, 400, 300].map((val, i) => (
-                      <text
-                        key={i}
-                        x="30"
-                        y={50 + i * 30}
-                        fontSize="10"
-                        fill="#6b7280"
-                        textAnchor="end"
-                      >
-                        {val}k
-                      </text>
-                    ))} */}
-
                     {/* Pie chart for yearly data */}
                     <g transform="translate(150, 100)">
                       {yearlyChartData.map((data, i) => {
@@ -655,7 +813,6 @@ const Dashboard = () => {
                       })}
                     </g>
 
-                    {/* Legend */}
                     {/* Legend */}
                     <g transform="translate(20, 170)">
                       {yearlyChartData.map((item, i) => (
@@ -826,47 +983,6 @@ const Dashboard = () => {
           </div>
         </div>
       </div>
-
-      {/* Service Status */}
-      {/* <div className="bg-white rounded-xl shadow-lg p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <FaWater className="text-[#a997cb]" />
-            <h3 className="text-lg font-semibold text-gray-800">
-              Service Status
-            </h3>
-          </div>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <FaSpinner className="text-[#a997cb] animate-spin" />
-                <span className="font-medium">Washing</span>
-              </div>
-              <span className="bg-[#a997cb] text-white px-2 py-1 rounded-full text-xs">
-                8 items
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <FaClock className="text-purple-500" />
-                <span className="font-medium">Drying</span>
-              </div>
-              <span className="bg-purple-500 text-white px-2 py-1 rounded-full text-xs">
-                5 items
-              </span>
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-purple-50 rounded-lg">
-              <div className="flex items-center gap-3">
-                <FaTshirt className="text-purple-600" />
-                <span className="font-medium">Ready</span>
-              </div>
-              <span className="bg-purple-600 text-white px-2 py-1 rounded-full text-xs">
-                12 items
-              </span>
-            </div>
-          </div>
-        </div> */}
 
       {renderContent()}
 

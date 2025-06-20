@@ -13,6 +13,7 @@ const CustomerList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const limit = 10;
+  const [filteredCustomers, setFilteredCustomers] = useState([]);
 
   const fetchCustomers = async (pageNumber = 1) => {
     setLoading(true);
@@ -30,26 +31,46 @@ const CustomerList = () => {
   };
 
   const searchCustomers = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+      fetchCustomers(1);
+      return;
+    }
+
     setLoading(true);
     setIsSearching(true);
     try {
       const res = await axios.get(
         `https://dirt-off-backend-main.vercel.app/custdirt/search?q=${searchQuery}`
       );
-      setCustomers(res.data.data || []);
+      const sortedCustomers = (res.data.data || []).sort((a, b) =>
+        a.firstName.localeCompare(b.firstName)
+      );
+      setCustomers(sortedCustomers);
+      setTotalPages(1);
       setLoading(false);
     } catch (err) {
+      toast.error("No results found");
       setCustomers([]);
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    if (!isSearching) {
-      fetchCustomers(page);
-    }
-  }, [page, isSearching]);
+    fetchCustomers(page);
+  }, [page]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim()) {
+        searchCustomers();
+      } else {
+        setIsSearching(false);
+        fetchCustomers(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleDelete = async (id) => {
     const confirm = window.confirm(
@@ -67,6 +88,26 @@ const CustomerList = () => {
       toast.error("Failed to delete customer");
     }
   };
+  // useEffect(() => {
+  //   const timeoutId = setTimeout(() => {
+  //     if (searchQuery.trim()) {
+  //       const filtered = customers
+  //         .filter(
+  //           (customer) =>
+  //             customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+  //             customer.phone.includes(searchQuery)
+  //         )
+  //         .sort((a, b) => a.name.localeCompare(b.name));
+  //       setFilteredCustomers(filtered);
+  //     } else {
+  //       setFilteredCustomers(
+  //         customers.sort((a, b) => a.name.localeCompare(b.name))
+  //       );
+  //     }
+  //   }, 500);
+
+  //   return () => clearTimeout(timeoutId);
+  // }, [searchQuery, customers]);
 
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
@@ -74,12 +115,12 @@ const CustomerList = () => {
     }
   };
 
-  if (loading)
-    return (
-      <p className="text-theme-purple text-center mt-10">
-        Loading customers...
-      </p>
-    );
+  // if (loading)
+  //   return (
+  //     <p className="text-theme-purple text-center mt-10">
+  //       Loading customers...
+  //     </p>
+  //   );
   if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
 
   return (
@@ -88,12 +129,6 @@ const CustomerList = () => {
         <h2 className="text-2xl font-bold text-theme-purple">
           Customer Directory
         </h2>
-        {/* <Link
-          to="/customerform"
-          className="bg-theme-purple text-white px-4 py-2 rounded hover:bg-theme-purple-dark transition"
-        >
-          + Add Customer
-        </Link> */}
       </div>
 
       {/* Search Input */}
@@ -102,21 +137,20 @@ const CustomerList = () => {
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search by name or phone..."
+          placeholder=" Search by customer or receipt no..."
           className="border border-gray-300 px-4 py-2 rounded w-full"
         />
-        <button
-          onClick={searchCustomers}
-          className="bg-theme-purple text-white px-4 py-2 rounded hover:bg-theme-purple-dark"
+        {/* <button
+          onClick={searchEntries}
+          className="bg-[#a997cb] text-white px-4 py-2 rounded hover:bg-[#8a82b5]"
         >
           Search
-        </button>
+        </button> */}
         {isSearching && (
           <button
             onClick={() => {
               setSearchQuery("");
-              setIsSearching(false);
-              fetchCustomers(1);
+              fetchEntries(1); // Reset to page 1 and refetch normal entries
             }}
             className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
           >
@@ -125,89 +159,97 @@ const CustomerList = () => {
         )}
       </div>
 
-      {customers.length === 0 ? (
-        <p className="text-gray-500 text-center">No customers found.</p>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 shadow-sm rounded-lg overflow-hidden">
-              <thead className="bg-theme-purple/20 text-theme-purple">
-                <tr>
-                  <th className="text-center px-4 py-2 border">S No.</th>
-                  <th className="text-left px-4 py-2 border">First Name</th>
-                  <th className="text-left px-4 py-2 border">Last Name</th>
-                  <th className="text-left px-4 py-2 border">Phone</th>
-                  <th className="text-left px-4 py-2 border">Email</th>
-                  <th className="text-left px-4 py-2 border">Address</th>
-                  <th className="text-left px-4 py-2 border">Postal Code</th>
-                  <th className="text-center px-4 py-2 border">Actions</th>
+      <div className="overflow-x-auto">
+        <table className="min-w-full border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+          <thead className="bg-theme-purple/20 text-theme-purple">
+            <tr>
+              <th className="text-center px-4 py-2 border">S No.</th>
+              <th className="text-left px-4 py-2 border">First Name</th>
+              <th className="text-left px-4 py-2 border">Last Name</th>
+              <th className="text-left px-4 py-2 border">Phone</th>
+              <th className="text-left px-4 py-2 border">Email</th>
+              <th className="text-left px-4 py-2 border">Address</th>
+              <th className="text-left px-4 py-2 border">Postal Code</th>
+              <th className="text-center px-4 py-2 border">Actions</th>
+            </tr>
+          </thead>
+          <tbody className="bg-white">
+            {loading ? (
+              <tr>
+                <td colSpan="8" className="text-center py-8 text-gray-600">
+                  Loading customers...
+                </td>
+              </tr>
+            ) : customers.length === 0 ? (
+              <tr>
+                <td colSpan="8" className="text-center py-8 text-gray-500">
+                  No customers found.
+                </td>
+              </tr>
+            ) : (
+              customers.map((cust, index) => (
+                <tr key={cust._id} className="hover:bg-theme-purple/10">
+                  <td className="px-4 py-2 border text-center">
+                    {(page - 1) * limit + index + 1}
+                  </td>
+                  <td className="px-4 py-2 border">{cust.firstName}</td>
+                  <td className="px-4 py-2 border">{cust.lastName}</td>
+                  <td className="px-4 py-2 border">{cust.phone}</td>
+                  <td className="px-4 py-2 border">{cust.email}</td>
+                  <td className="px-4 py-2 border">{cust.address}</td>
+                  <td className="px-4 py-2 border">{cust.postalCode}</td>
+                  <td className="px-4 py-2 border text-center">
+                    <Link
+                      to={`/customerform/${cust._id}`}
+                      className="text-sm text-theme-purple inline-flex hover:underline mr-4"
+                    >
+                      <FaEdit />
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(cust._id)}
+                      className="text-sm text-red-600 hover:underline"
+                    >
+                      <FaTrashAlt />
+                    </button>
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white">
-                {customers.map((cust, index) => (
-                  <tr key={cust._id} className="hover:bg-theme-purple/10">
-                    <td className="px-4 py-2 border text-center">
-                      {(page - 1) * limit + index + 1}
-                    </td>
-                    <td className="px-4 py-2 border">{cust.firstName}</td>
-                    <td className="px-4 py-2 border">{cust.lastName}</td>
-                    <td className="px-4 py-2 border">{cust.phone}</td>
-                    <td className="px-4 py-2 border">{cust.email}</td>
-                    <td className="px-4 py-2 border">{cust.address}</td>
-                    <td className="px-4 py-2 border">{cust.postalCode}</td>
-                    <td className="px-4 py-2 border text-center">
-                      <Link
-                        to={`/customerform/${cust._id}`}
-                        className="text-sm text-theme-purple inline-flex hover:underline mr-4"
-                      >
-                        <FaEdit />
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(cust._id)}
-                        className="text-sm text-red-600 hover:underline"
-                      >
-                        <FaTrashAlt />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
 
-          {/* Pagination - only when not searching */}
-          {!isSearching && (
-            <div className="flex justify-center items-center mt-6 space-x-2">
-              <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
-              >
-                Previous
-              </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    page === i + 1
-                      ? "bg-[#a997cb] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
+      {/* Pagination - only when not searching */}
+      {!isSearching && !loading && customers.length > 0 && (
+        <div className="flex justify-center items-center mt-6 space-x-2">
+          <button
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1}
+            className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+          >
+            Previous
+          </button>
+          {[...Array(totalPages)].map((_, i) => (
+            <button
+              key={i}
+              onClick={() => handlePageChange(i + 1)}
+              className={`px-3 py-1 rounded ${
+                page === i + 1
+                  ? "bg-[#a997cb] text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+          <button
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages}
+            className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+          >
+            Next
+          </button>
+        </div>
       )}
     </div>
   );

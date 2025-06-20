@@ -72,10 +72,6 @@ const ProductList = () => {
     }
   };
 
-  if (loading)
-    return (
-      <p className="text-gray-600 text-center mt-10">Loading products...</p>
-    );
   if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
 
   return (
@@ -101,12 +97,12 @@ const ProductList = () => {
           placeholder="Search products..."
           className="border border-gray-300 px-4 py-2 rounded w-full"
         />
-        <button
+        {/* <button
           onClick={searchProducts}
           className="bg-[#a997cb] text-white px-4 py-2 rounded hover:bg-[#8a82b5]"
         >
           Search
-        </button>
+        </button> */}
         {isSearching && (
           <button
             onClick={() => {
@@ -121,28 +117,37 @@ const ProductList = () => {
         )}
       </div>
 
-      {products.length === 0 ? (
-        <p className="text-gray-500 text-center">No products found.</p>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden ">
-              <thead className="bg-[#e7e3f5] text-[#a997cb]">
+      <>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden">
+            <thead className="bg-[#e7e3f5] text-[#a997cb]">
+              <tr>
+                <th className="px-4 py-2 border text-center">S No.</th>
+                <th className="text-left px-4 py-2 border">Product Name</th>
+                <th className="text-left px-4 py-2 border">Charge</th>
+                <th className="text-left px-4 py-2 border">Tax</th>
+                <th className="text-center px-4 py-2 border">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white">
+              {loading ? (
                 <tr>
-                  <th className=" px-4 py-2 border  text-center">S No.</th>
-                  <th className="text-left px-4 py-2 border">Product Name</th>
-                  <th className="text-left px-4 py-2 border">Charge</th>
-                  <th className="text-left px-4 py-2 border">Tax</th>
-                  <th className="text-center px-4 py-2 border">Actions</th>
+                  <td colSpan="5" className="text-center py-8 text-gray-600">
+                    Loading products...
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white">
-                {products.map((prod, index) => (
+              ) : products.length === 0 ? (
+                <tr>
+                  <td colSpan="5" className="text-center py-8 text-gray-500">
+                    No products found.
+                  </td>
+                </tr>
+              ) : (
+                products.map((prod, index) => (
                   <tr key={prod._id} className="hover:bg-gray-50">
                     <td className="px-4 py-2 border text-center">
-                      {(page - 1) * limit + index + 1}
+                      {isSearching ? index + 1 : (page - 1) * limit + index + 1}
                     </td>
-
                     <td className="px-4 py-2 border">{prod.name}</td>
                     <td className="px-4 py-2 border">
                       {prod.ServiceCharge.map((sc, idx) => (
@@ -160,7 +165,6 @@ const ProductList = () => {
                         </span>
                       ))}
                     </td>
-
                     <td className="px-4 py-2 border text-center">
                       <Link
                         to={`/productform/${prod._id}`}
@@ -176,45 +180,45 @@ const ProductList = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          {/* Pagination */}
-          {!isSearching && (
-            <div className="flex justify-center items-center mt-6 space-x-2">
+        {/* Pagination */}
+        {!isSearching && !loading && products.length > 0 && (
+          <div className="flex justify-center items-center mt-6 space-x-2">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            {[...Array(totalPages)].map((_, i) => (
               <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+                key={i}
+                onClick={() => handlePageChange(i + 1)}
+                className={`px-3 py-1 rounded ${
+                  page === i + 1
+                    ? "bg-[#a997cb] text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
               >
-                Previous
+                {i + 1}
               </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    page === i + 1
-                      ? "bg-[#a997cb] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
-      )}
+            ))}
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+              className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </>
     </div>
   );
 };

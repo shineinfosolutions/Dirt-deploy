@@ -46,8 +46,11 @@ const EntryList = () => {
       const res = await axios.get(
         `https://dirt-off-backend-main.vercel.app/entry/search?q=${searchQuery}`
       );
-      setEntries(res.data.data || []);
-      setTotalPages(1); // disable pagination for search
+      const sortedEntries = (res.data.data || []).sort((a, b) =>
+        a.customer.localeCompare(b.customer)
+      );
+      setEntries(sortedEntries);
+      setTotalPages(1);
       setLoading(false);
     } catch (err) {
       toast.error("No results found");
@@ -59,6 +62,19 @@ const EntryList = () => {
   useEffect(() => {
     fetchEntries(page);
   }, [page]);
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim()) {
+        searchEntries();
+      } else {
+        setIsSearching(false);
+        fetchEntries(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   const handleDelete = async (id) => {
     const confirm = window.confirm(
@@ -81,11 +97,51 @@ const EntryList = () => {
     }
   };
 
+  const toggleVisibility = async (id) => {
+    const confirm = window.confirm(
+      "Are you sure you want to toggle visibility for this entry?"
+    );
+    if (!confirm) return;
+
+    try {
+      await axios.put(
+        `https://dirt-off-backend-main.vercel.app/entry/toggleVisibility/${id}`
+      );
+      toast.success("Deleted successfully");
+      if (isSearching) {
+        searchEntries();
+      } else {
+        fetchEntries(page);
+      }
+    } catch (err) {
+      toast.error("Failed to delete");
+    }
+  };
+
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= totalPages) {
       setPage(newPage);
     }
   };
+
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await axios.put(
+        `https://dirt-off-backend-main.vercel.app/entry/update/${id}`,
+        { status: newStatus }
+      );
+      toast.success("Status updated successfully");
+      if (isSearching) {
+        searchEntries();
+      } else {
+        fetchEntries(page);
+      }
+    } catch (err) {
+      toast.error("Failed to update status");
+    }
+  };
+
+  if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-4">
@@ -108,12 +164,12 @@ const EntryList = () => {
           placeholder="Search by customer or receipt no..."
           className="border border-gray-300 px-4 py-2 rounded w-full"
         />
-        <button
+        {/* <button
           onClick={searchEntries}
           className="bg-[#a997cb] text-white px-4 py-2 rounded hover:bg-[#8a82b5]"
         >
           Search
-        </button>
+        </button> */}
         {isSearching && (
           <button
             onClick={() => {
@@ -127,35 +183,44 @@ const EntryList = () => {
         )}
       </div>
 
-      {loading ? (
-        <p className="text-gray-600 text-center mt-10">Loading entries...</p>
-      ) : entries.length === 0 ? (
-        <p className="text-gray-500 text-center">No entries found.</p>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden">
-              <thead className="bg-[#e7e3f5] text-[#a997cb]">
+      <>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden">
+            <thead className="bg-[#e7e3f5] text-[#a997cb]">
+              <tr>
+                <th className="text-left px-4 py-2">Rcpt No.</th>
+                <th className="text-left px-4 py-2">Customer</th>
+                {/* <th className="text-left px-4 py-2">Service</th> */}
+                <th className="text-left px-4 py-2">Products</th>
+                <th className="text-left px-4 py-2">Total Amount</th>
+                <th className="text-left px-4 py-2">Pickup</th>
+                <th className="text-left px-4 py-2">Delivery</th>
+                <th className="text-left px-4 py-2">Status</th>
+
+                <th className="text-center px-4 py-2">Actions</th>
+              </tr>
+            </thead>
+
+            <tbody className="bg-white">
+              {loading ? (
                 <tr>
-                  <th className="text-left px-4 py-2">Rcpt No.</th>
-                  <th className="text-left px-4 py-2">Customer</th>
-                  {/* <th className="text-left px-4 py-2">Service</th> */}
-                  <th className="text-left px-4 py-2">Products</th>
-                  <th className="text-left px-4 py-2">Total Amount</th>
-                  <th className="text-left px-4 py-2">Pickup</th>
-                  <th className="text-left px-4 py-2">Delivery</th>
-                  <th className="text-center px-4 py-2">Actions</th>
+                  <td colSpan="8" className="text-center py-8 text-gray-600">
+                    Loading entries...
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white">
-                {entries.map((entry, index) => (
+              ) : entries.length === 0 ? (
+                <tr>
+                  <td colSpan="8" className="text-center py-8 text-gray-500">
+                    No entries found.
+                  </td>
+                </tr>
+              ) : (
+                entries.map((entry, index) => (
                   <tr key={entry._id} className="hover:bg-gray-50">
                     <td className="px-4 py-2 border text-center">
                       <p> {entry.receiptNo || "N/A"}</p>
                     </td>
-
                     <td className="px-4 py-2 border">{entry.customer}</td>
-                    {/* <td className="px-4 py-2 border">{entry.service}</td> */}
                     <td className="px-4 py-2 border">
                       {entry.products.map((p) => p.productName).join(", ")}
                     </td>
@@ -174,6 +239,19 @@ const EntryList = () => {
                         : entry.pickupAndDelivery?.deliveryAddress ||
                           entry.pickupAndDelivery?.deliveryType}
                     </td>
+                    <td className="px-4 py-2 border">
+                      <select
+                        value={entry.status || "pending"}
+                        onChange={(e) =>
+                          handleStatusChange(entry._id, e.target.value)
+                        }
+                        className="border px-2 py-1 rounded text-xs w-full"
+                      >
+                        <option value="pending">Pending</option>
+                        <option value="delivered">Delivered</option>
+                        <option value="collected">Collected</option>
+                      </select>
+                    </td>
                     <td className="px-4 py-2 border text-center">
                       <div className="flex justify-around items-center">
                         <Link
@@ -182,21 +260,18 @@ const EntryList = () => {
                         >
                           <FaEdit />
                         </Link>
-
                         <button
-                          onClick={() => handleDelete(entry._id)}
+                          onClick={() => toggleVisibility(entry._id)}
                           className="text-sm text-red-600 hover:underline"
                         >
                           <FaTrashAlt />
                         </button>
-
                         <Link
                           to={`/LaundryBill/${entry._id}`}
                           className="text-sm pl-3 text-[#a997cb] hover:text-[#8a82b5] hover:underline mr-4"
                         >
                           View
                         </Link>
-
                         <Link
                           to={`/qr-tags/${entry._id}`}
                           className="text-sm text-[#7f59c5] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
@@ -206,45 +281,45 @@ const EntryList = () => {
                       </div>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          {/* Pagination only when not searching */}
-          {!isSearching && (
-            <div className="flex justify-center items-center mt-6 space-x-2">
+        {/* Pagination only when not searching and not loading */}
+        {!isSearching && !loading && entries.length > 0 && (
+          <div className="flex justify-center items-center mt-6 space-x-2">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            {[...Array(totalPages)].map((_, i) => (
               <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+                key={i}
+                onClick={() => handlePageChange(i + 1)}
+                className={`px-3 py-1 rounded ${
+                  page === i + 1
+                    ? "bg-[#a997cb] text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
               >
-                Previous
+                {i + 1}
               </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    page === i + 1
-                      ? "bg-[#a997cb] text-white"
-                      : "bg-gray-100 text-gray-600"
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
-      )}
+            ))}
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+              className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </>
     </div>
   );
 };
