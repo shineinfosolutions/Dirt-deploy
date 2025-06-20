@@ -17,6 +17,8 @@ const Dashboard = () => {
     deliveredOrders: 0,
     pendingOrders: 0,
     totalSales: 0,
+    todayExpected: 0,
+    collectedOrders: 0,
   });
 
   const [apiData, setApiData] = useState({
@@ -24,96 +26,89 @@ const Dashboard = () => {
     monthlySales: [],
     weeklyData: [],
   });
-  const newOrdersData = [
-    { id: 1, customer: "John Doe", items: "Shirts, Pants", date: "2025-01-15" },
-    {
-      id: 2,
-      customer: "Jane Smith",
-      items: "Dress, Jacket",
-      date: "2025-01-15",
-    },
-    { id: 3, customer: "Mike Johnson", items: "Suits", date: "2025-01-14" },
-  ];
 
-  const deliveredOrdersData = [
-    {
-      id: 1,
-      customer: "Alice Brown",
-      items: "Bedsheets",
-      date: "2025-01-15",
-      status: "Delivered",
-    },
-    {
-      id: 2,
-      customer: "Bob Wilson",
-      items: "Curtains",
-      date: "2025-01-14",
-      status: "Delivered",
-    },
-    {
-      id: 3,
-      customer: "Carol Davis",
-      items: "Towels",
-      date: "2025-01-13",
-      status: "Delivered",
-    },
-  ];
-
-  const pendingOrdersData = [
-    {
-      id: 1,
-      customer: "David Lee",
-      items: "Coats",
-      date: "2025-01-12",
-      status: "In Process",
-    },
-    {
-      id: 2,
-      customer: "Eva Martinez",
-      items: "Blankets",
-      date: "2025-01-11",
-      status: "Washing",
-    },
-    {
-      id: 3,
-      customer: "Frank Taylor",
-      items: "Pillows",
-      date: "2025-01-10",
-      status: "Drying",
-    },
-  ];
+  const [deliveryData, setDeliveryData] = useState({
+    pending: { orders: [] },
+    collected: { orders: [] },
+    delivered: { orders: [] },
+    todayExpectedDeliveries: { orders: [] },
+    todayReceivedOrders: { orders: [] },
+  });
 
   const [activeView, setActiveView] = useState("sales");
 
   // Fetch data from API
+  // Fetch data from API
+  // Update the fetchStats function in Dashboard.jsx
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await axios.get(
+        // Fetch sales stats first (this is working)
+        const salesResponse = await axios.get(
           "https://dirt-off-backend-main.vercel.app/entry/stats/recent"
         );
-        const data = response.data.data;
+        const salesData = salesResponse.data.data;
+
+        const totalSalesCalculated = salesData.yearlySales.reduce(
+          (acc, year) => acc + year.totalSales,
+          0
+        );
 
         setApiData({
-          yearlySales: data.yearlySales,
-          monthlySales: data.monthlySales,
-          weeklyData: data.weeklyData,
+          yearlySales: salesData.yearlySales,
+          monthlySales: salesData.monthlySales,
+          weeklyData: salesData.weeklyData,
         });
 
-        // Update stats with real data
+        // Set sales data immediately
+        setStats((prev) => ({
+          ...prev,
+          totalSales: totalSalesCalculated,
+        }));
+
+        // Try delivery APIs individually to avoid complete failure
+        const deliveryTypes = [
+          "pending",
+          "collected",
+          "delivered",
+          "todayExpected",
+          "todayReceived",
+        ];
+        const deliveryResults = {};
+        const deliveryStats = {};
+
+        for (const type of deliveryTypes) {
+          try {
+            const res = await axios.get(
+              `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=${type}`
+            );
+            deliveryResults[type] = res.data.data;
+            deliveryStats[type] = res.data.data.count || 0;
+          } catch (error) {
+            console.error(`${type} API failed:`, error);
+            deliveryResults[type] = { orders: [], count: 0 };
+            deliveryStats[type] = 0;
+          }
+        }
+
+        setDeliveryData({
+          pending: deliveryResults.pending || { orders: [] },
+          collected: deliveryResults.collected || { orders: [] },
+          delivered: deliveryResults.delivered || { orders: [] },
+          todayExpectedDeliveries: deliveryResults.todayExpected || {
+            orders: [],
+          },
+          todayReceivedOrders: deliveryResults.todayReceived || { orders: [] },
+        });
+
+        // Update all stats
         setStats({
-          newOrders: data.totalOrders,
-          deliveredOrders: data.yearlySales.reduce(
-            (acc, year) => acc + year.orderCount,
-            0
-          ),
-          pendingOrders:
-            data.totalOrders -
-            data.yearlySales.reduce((acc, year) => acc + year.orderCount, 0),
-          totalSales: data.yearlySales.reduce(
-            (acc, year) => acc + year.totalSales,
-            0
-          ),
+          newOrders: deliveryStats.todayReceived || 0,
+          todayExpected: deliveryStats.todayExpected || 0,
+          pendingOrders: deliveryStats.pending || 0,
+          collectedOrders: deliveryStats.collected || 0,
+          deliveredOrders: deliveryStats.delivered || 0,
+          totalSales: totalSalesCalculated,
         });
       } catch (error) {
         console.error("Error fetching stats:", error);
@@ -122,7 +117,6 @@ const Dashboard = () => {
 
     fetchStats();
   }, []);
-
   // Process data for charts
   const processWeeklyData = () => {
     return apiData.weeklyData.map((item) => item.totalSales);
@@ -164,18 +158,70 @@ const Dashboard = () => {
               New Orders
             </h3>
             <div className="space-y-3">
-              {newOrdersData.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex justify-between items-center p-3 bg-purple-50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{order.customer}</p>
-                    <p className="text-sm text-gray-600">{order.items}</p>
+              {deliveryData.todayReceivedOrders.orders?.length > 0 ? (
+                deliveryData.todayReceivedOrders.orders.map((order, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-3 bg-purple-50 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {order.customer || "Customer"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Receipt #{order.receiptNo}
+                      </p>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
-                  <span className="text-sm text-gray-500">{order.date}</span>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">No new orders today</p>
                 </div>
-              ))}
+              )}
+            </div>
+          </div>
+        );
+
+      case "todayExpected":
+        return (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Today's Expected Deliveries
+            </h3>
+            <div className="space-y-3">
+              {deliveryData.todayExpectedDeliveries.orders?.length > 0 ? (
+                deliveryData.todayExpectedDeliveries.orders.map(
+                  (order, index) => (
+                    <div
+                      key={index}
+                      className="flex justify-between items-center p-3 bg-blue-50 rounded-lg"
+                    >
+                      <div>
+                        <p className="font-medium">
+                          {order.customer || "Customer"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Receipt #{order.receiptNo}
+                        </p>
+                      </div>
+                      <span className="text-sm text-blue-600">
+                        Expected Today
+                      </span>
+                    </div>
+                  )
+                )
+              ) : (
+                <div className="text-center py-8">
+                  <FaClock className="text-purple-500 text-4xl mx-auto mb-4" />
+                  <p className="text-gray-600">
+                    No deliveries expected for today
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -187,23 +233,35 @@ const Dashboard = () => {
               Delivered Orders
             </h3>
             <div className="space-y-3">
-              {deliveredOrdersData.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex justify-between items-center p-3 bg-green-50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{order.customer}</p>
-                    <p className="text-sm text-gray-600">{order.items}</p>
+              {deliveryData.delivered.orders?.length > 0 ? (
+                deliveryData.delivered.orders.map((order, index) => (
+                  <div
+                    key={order.id}
+                    className="flex justify-between items-center p-3 bg-purple-50 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {order.customer || "Customer"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Receipt #{order.receiptNo}
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm bg-green-600 text-white px-2 py-1 rounded-full">
+                        Delivered
+                      </span>
+                      <p className="text-sm text-gray-500 mt-1">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-sm bg-green-600 text-white px-2 py-1 rounded-full">
-                      {order.status}
-                    </span>
-                    <p className="text-sm text-gray-500 mt-1">{order.date}</p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">No delivered orders</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
         );
@@ -212,26 +270,74 @@ const Dashboard = () => {
         return (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
             <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Pending Orders
+              To be collected
             </h3>
             <div className="space-y-3">
-              {pendingOrdersData.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg"
-                >
-                  <div>
-                    <p className="font-medium">{order.customer}</p>
-                    <p className="text-sm text-gray-600">{order.items}</p>
-                  </div>
-                  <div className="text-right">
+              {deliveryData.pending.orders?.length > 0 ? (
+                deliveryData.pending.orders.map((order, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {order.customer || "Customer"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Receipt #{order.receiptNo}
+                      </p>
+                    </div>
                     <span className="text-sm bg-yellow-600 text-white px-2 py-1 rounded-full">
-                      {order.status}
+                      Pending
                     </span>
-                    <p className="text-sm text-gray-500 mt-1">{order.date}</p>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <p className="text-gray-600">No pending orders</p>
                 </div>
-              ))}
+              )}
+            </div>
+          </div>
+        );
+
+      // Add this case after the "pending" case in renderContent
+      case "collected":
+        return (
+          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4">
+              Collected Orders
+            </h3>
+            <div className="space-y-3">
+              {deliveryData.collected.orders?.length > 0 ? (
+                deliveryData.collected.orders.map((order, index) => (
+                  <div
+                    key={index}
+                    className="flex justify-between items-center p-3 bg-orange-50 rounded-lg"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {order.customer || "Customer"}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        Receipt #{order.receiptNo}
+                      </p>
+                    </div>
+                    <span className="text-sm text-gray-500">
+                      {order.pickupAndDelivery?.pickupDate
+                        ? new Date(
+                            order.pickupAndDelivery.pickupDate
+                          ).toLocaleDateString()
+                        : "No pickup date"}
+                    </span>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-8">
+                  <FaTshirt className="text-purple-500 text-4xl mx-auto mb-4" />
+                  <p className="text-gray-600">No orders collected yet</p>
+                </div>
+              )}
             </div>
           </div>
         );
@@ -584,88 +690,138 @@ const Dashboard = () => {
         </p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* New Orders */}
-        <div
-          onClick={() => setActiveView("newOrders")}
-          className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-[#a997cb] hover:shadow-xl transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">New Orders</p>
-              <h3 className="text-2xl font-bold text-gray-800">
-                {stats.newOrders}
-              </h3>
-              <p className="text-[#a997cb] text-xs mt-1">
-                ↗ +12% from yesterday
-              </p>
+      {/* Stats Cards - 5 Cards */}
+      <div className="space-y-6 mb-8">
+        {/* First Row - 3 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* New Orders */}
+          <div
+            onClick={() => setActiveView("newOrders")}
+            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">New Orders</p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {stats.newOrders}
+                </h3>
+                <p className="text-purple-500 text-xs mt-1">
+                  ↗ +12% from yesterday
+                </p>
+              </div>
+              <div className="bg-purple-100 p-4 rounded-full">
+                <FaShoppingCart className="text-purple-500 text-xl" />
+              </div>
             </div>
-            <div className="bg-purple-100 p-4 rounded-full">
-              <FaShoppingCart className="text-[#a997cb] text-xl" />
+          </div>
+
+          {/* Today's Expected Deliveries */}
+          <div
+            onClick={() => setActiveView("todayExpected")}
+            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">
+                  Today's Expected
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {stats.todayExpected || 0}
+                </h3>
+                <p className="text-purple-500 text-xs mt-1">Deliveries today</p>
+              </div>
+              <div className="bg-purple-100 p-4 rounded-full">
+                <FaClock className="text-purple-500 text-xl" />
+              </div>
+            </div>
+          </div>
+
+          {/* Pending Orders */}
+          <div
+            onClick={() => setActiveView("pending")}
+            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">
+                  Pending Orders
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {stats.pendingOrders}
+                </h3>
+                <p className="text-purple-500 text-xs mt-1">In progress</p>
+              </div>
+              <div className="bg-purple-100 p-4 rounded-full">
+                <FaSpinner className="text-purple-500 text-xl" />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Delivered Orders */}
-        <div
-          onClick={() => setActiveView("delivered")}
-          className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-[#8a82b5] hover:shadow-xl transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Delivered</p>
-              <h3 className="text-2xl font-bold text-gray-800">
-                {stats.deliveredOrders}
-              </h3>
-              <p className="text-[#8a82b5] text-xs mt-1">
-                ↗ +8% from yesterday
-              </p>
-            </div>
-            <div className="bg-purple-100 p-4 rounded-full">
-              <FaTruck className="text-[#8a82b5] text-xl" />
-            </div>
-          </div>
-        </div>
-
-        {/* Pending Orders */}
-        <div
-          onClick={() => setActiveView("pending")}
-          className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-400 hover:shadow-xl transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Pending</p>
-              <h3 className="text-2xl font-bold text-gray-800">
-                {stats.pendingOrders}
-              </h3>
-              <p className="text-purple-400 text-xs mt-1">
-                ↘ -3% from yesterday
-              </p>
-            </div>
-            <div className="bg-purple-100 p-4 rounded-full">
-              <FaClock className="text-purple-400 text-xl" />
+        {/* Second Row - 3 Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Collected Orders */}
+          <div
+            onClick={() => setActiveView("collected")}
+            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">
+                  Collected Orders
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {stats.collectedOrders}
+                </h3>
+                <p className="text-purple-500 text-xs mt-1">Ready for pickup</p>
+              </div>
+              <div className="bg-purple-100 p-4 rounded-full">
+                <FaTshirt className="text-purple-500 text-xl" />
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Total Sales */}
-        <div
-          onClick={() => setActiveView("sales")}
-          className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-600 hover:shadow-xl transition-shadow"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-gray-500 text-sm font-medium">Total Sales</p>
-              <h3 className="text-2xl font-bold text-gray-800">
-                ₹{stats.totalSales.toLocaleString()}
-              </h3>
-              <p className="text-purple-600 text-xs mt-1">
-                ↗ +15% from last month
-              </p>
+          {/* Total Deliveries */}
+          <div
+            onClick={() => setActiveView("delivered")}
+            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">
+                  Total Deliveries
+                </p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  {stats.deliveredOrders}
+                </h3>
+                <p className="text-purple-500 text-xs mt-1">
+                  ↗ +8% from yesterday
+                </p>
+              </div>
+              <div className="bg-purple-100 p-4 rounded-full">
+                <FaTruck className="text-purple-500 text-xl" />
+              </div>
             </div>
-            <div className="bg-purple-100 p-4 rounded-full">
-              <FaChartLine className="text-purple-600 text-xl" />
+          </div>
+
+          {/* Total Sales */}
+          <div
+            onClick={() => setActiveView("sales")}
+            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-600 hover:shadow-xl transition-shadow cursor-pointer"
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-gray-500 text-sm font-medium">Total Sales</p>
+                <h3 className="text-2xl font-bold text-gray-800">
+                  ₹{stats.totalSales.toLocaleString()}
+                </h3>
+                <p className="text-purple-600 text-xs mt-1">
+                  ↗ +15% from last month
+                </p>
+              </div>
+              <div className="bg-purple-100 p-4 rounded-full">
+                <FaChartLine className="text-purple-600 text-xl" />
+              </div>
             </div>
           </div>
         </div>
