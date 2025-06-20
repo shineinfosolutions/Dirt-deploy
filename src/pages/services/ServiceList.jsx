@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { FaTrashAlt, FaEdit } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FaTrashAlt, FaEdit } from "react-icons/fa";
 
 const ServiceList = () => {
   const [services, setServices] = useState([]);
@@ -10,7 +10,7 @@ const ServiceList = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const limit = 10;
 
@@ -18,11 +18,13 @@ const ServiceList = () => {
     setLoading(true);
     setIsSearching(false);
     try {
-      const res = await axios.get(`https://dirt-off-deploy.onrender.com/service/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(
+        `https://dirt-off-backend-main.vercel.app/service/pagination?page=${pageNumber}&limit=${limit}`
+      );
       setServices(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {
-      setError('Failed to fetch services');
+      setError("Failed to fetch services");
     } finally {
       setLoading(false);
     }
@@ -37,12 +39,14 @@ const ServiceList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`https://dirt-off-deploy.onrender.com/service/search?q=${searchQuery}`);
+      const res = await axios.get(
+        `https://dirt-off-backend-main.vercel.app/service/search?q=${searchQuery}`
+      );
       setServices(res.data.data || []);
       setTotalPages(1); // disable pagination for search
     } catch (err) {
       setServices([]);
-      toast.error('No results found');
+      toast.error("No results found");
     } finally {
       setLoading(false);
     }
@@ -55,19 +59,23 @@ const ServiceList = () => {
   }, [page, isSearching]);
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm('Are you sure you want to delete this service?');
+    const confirm = window.confirm(
+      "Are you sure you want to delete this service?"
+    );
     if (!confirm) return;
 
     try {
-      await axios.delete(`https://dirt-off-deploy.onrender.com/service/delete/${id}`);
-      toast.success('Service deleted successfully');
+      await axios.delete(
+        `https://dirt-off-backend-main.vercel.app/service/delete/${id}`
+      );
+      toast.success("Service deleted successfully");
       if (isSearching) {
         searchServices(); // refresh search results
       } else {
         fetchServices(page); // refresh current page
       }
     } catch (err) {
-      toast.error('Failed to delete service');
+      toast.error("Failed to delete service");
     }
   };
 
@@ -107,7 +115,7 @@ const ServiceList = () => {
         {isSearching && (
           <button
             onClick={() => {
-              setSearchQuery('');
+              setSearchQuery("");
               setIsSearching(false);
               setPage(1);
               fetchServices(1);
@@ -122,26 +130,34 @@ const ServiceList = () => {
       {loading ? (
         <p className="text-gray-600 text-center mt-10">Loading services...</p>
       ) : services.length === 0 ? (
-        <p className={`text-center mt-10 ${isSearching ? 'text-red-600' : 'text-gray-500'}`}>
+        <p
+          className={`text-center mt-10 ${
+            isSearching ? "text-red-600" : "text-gray-500"
+          }`}
+        >
           {isSearching
             ? `No services found matching "${searchQuery}".`
-            : 'No services found.'}
+            : "No services found."}
         </p>
       ) : (
         <>
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-200 shadow-sm rounded-lg overflow-hidden">
-              <thead style={{ backgroundColor: '#f3effa', color: '#6a5e85' }}>
+              <thead style={{ backgroundColor: "#f3effa", color: "#a997cb" }}>
                 <tr>
+                  <th className=" px-4 py-2 border text-center">S No.</th>
                   <th className="text-left px-4 py-2 border">Service Name</th>
                   <th className="text-left px-4 py-2 border">Description</th>
                   <th className="text-left px-4 py-2 border">Tax Percentage</th>
                   <th className="text-center px-4 py-2 border">Actions</th>
                 </tr>
               </thead>
-              <tbody className="bg-white">
-                {services.map((cust) => (
+              <tbody className="bg-white ">
+                {services.map((cust, index) => (
                   <tr key={cust._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border text-center">
+                      {(page - 1) * limit + index + 1}
+                    </td>
                     <td className="px-4 py-2 border">{cust.serviceName}</td>
                     <td className="px-4 py-2 border">{cust.description}</td>
                     <td className="px-4 py-2 border">{cust.taxPercent} %</td>
@@ -181,8 +197,8 @@ const ServiceList = () => {
                   onClick={() => handlePageChange(i + 1)}
                   className={`px-3 py-1 rounded ${
                     page === i + 1
-                      ? 'bg-[#a997cb] text-white'
-                      : 'bg-gray-100 text-gray-600'
+                      ? "bg-[#a997cb] text-white"
+                      : "bg-gray-100 text-gray-600"
                   }`}
                 >
                   {i + 1}

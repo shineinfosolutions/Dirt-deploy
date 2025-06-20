@@ -1,5 +1,5 @@
 import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import { useEffect, useState } from "react";
 import { AiFillCloseCircle, AiOutlineMenu } from "react-icons/ai";
 import Home from "./pages/Home";
@@ -9,7 +9,7 @@ import logo from "./assets/pcs.png";
 import CustomerForm1 from "./pages/CustomerForm";
 import CustomerList1 from "./pages/CustomerList";
 import InvoiceForm from "./pages/InvoiceForm";
-import CustomerList from "./pages/customer/CustomerList"
+import CustomerList from "./pages/customer/CustomerList";
 import CustomerForm from "./pages/customer/CustomerForm";
 
 import ProductList from "./pages/product/ProductList";
@@ -23,6 +23,9 @@ import ServiceList from "./pages/services/ServiceList";
 
 import EntryForm from "./pages/New_entry/EntryForm";
 import EntryList from "./pages/New_entry/EntryList";
+import QrSection from "./pages/QrSection"; // If you chose option 1
+import Dashboard from "./pages/dashboard/Dashboard";
+
 const App = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -64,7 +67,7 @@ const App = () => {
   };
   return (
     <>
-         <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
+      <Toaster position="top-right" toastOptions={{ duration: 3000 }} />
       {currentUser ? (
         <section className="bg-gray-100 dark:bg-gray-900">
           <aside
@@ -108,17 +111,15 @@ const App = () => {
                     </button>
                   </div>
                 )}
-                <h2 className="font-semibold text-xl mt-3">
-                  DirtOff
-                </h2>
+                <h2 className="font-semibold text-xl mt-3">DirtOff</h2>
               </div>
 
               <div className="mt-8 text-center">
-             <img
-  src={logo}
-  alt="admin"
-  className="m-auto h-20 w-[11rem] object-contain lg:h-28 lg:w-[11rem]"
-/>
+                <img
+                  src={logo}
+                  alt="admin"
+                  className="m-auto h-20 w-[11rem] object-contain lg:h-28 lg:w-[11rem]"
+                />
 
                 <h5 className="mt-4 hidden text-xl font-semibold text-gray-600 lg:block dark:text-gray-300">
                   {name}
@@ -130,7 +131,7 @@ const App = () => {
                 <li
                   onClick={() => {
                     setActiveLink("dashboard");
-                    navigate("/");
+                    navigate("/Dashboard");
                     setMl();
                   }}
                 >
@@ -139,33 +140,33 @@ const App = () => {
                     aria-label="dashboard"
                     className={
                       activeLink == "dashboard"
-                            ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
-      : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
+                        ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
+                        : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
                     }
                   >
-                              <svg
-    className="-ml-1 h-6 w-6"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
-    <path
-      d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#6c5a87]"
-    ></path>
-    <path
-      d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
-      className="fill-current text-[#9a7ec9]"
-    ></path>
-    <path
-      d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#8f72bb]"
-    ></path>
-  </svg>
+                    <svg
+                      className="-ml-1 h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#6c5a87]"
+                      ></path>
+                      <path
+                        d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
+                        className="fill-current text-[#9a7ec9]"
+                      ></path>
+                      <path
+                        d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#8f72bb]"
+                      ></path>
+                    </svg>
                     <span className="-mr-1 font-medium">Dashboard</span>
                   </a>
                 </li>
               </ul>
-                {/* <ul className="mt-8 space-y-2 tracking-wide">
+              {/* <ul className="mt-8 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("LaudryBill");
@@ -204,7 +205,7 @@ const App = () => {
                   </a>
                 </li>
               </ul> */}
-               {/* <ul className="mt-8 space-y-2 tracking-wide">
+              {/* <ul className="mt-8 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("CustomerForm");
@@ -243,7 +244,7 @@ const App = () => {
                   </a>
                 </li>
               </ul>  */}
-                {/* <ul className="mt-8 space-y-2 tracking-wide">
+              {/* <ul className="mt-8 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("CustomerList");
@@ -282,7 +283,7 @@ const App = () => {
                   </a>
                 </li>
               </ul> */}
-               {/* <ul className="mt-8 space-y-2 tracking-wide">
+              {/* <ul className="mt-8 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("InvoiceForm");
@@ -321,7 +322,7 @@ const App = () => {
                   </a>
                 </li>
               </ul> */}
-                     <ul className="mt-4 space-y-2 tracking-wide">
+              <ul className="mt-4 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("New Entry");
@@ -329,41 +330,38 @@ const App = () => {
                     setMl();
                   }}
                 >
-<a
-  href="#"
-  aria-label="New Entry"
-  className={
-    activeLink === "New Entry"
-      ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
-      : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
-  }
->
- <svg
-    className="-ml-1 h-6 w-6"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
-    <path
-      d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#6c5a87]"
-    ></path>
-    <path
-      d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
-      className="fill-current text-[#9a7ec9]"
-    ></path>
-    <path
-      d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#8f72bb]"
-    ></path>
-  </svg>
-  <span className="-mr-1 font-medium">New Entry</span>
-</a>
-
-
-
+                  <a
+                    href="#"
+                    aria-label="New Entry"
+                    className={
+                      activeLink === "New Entry"
+                        ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
+                        : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
+                    }
+                  >
+                    <svg
+                      className="-ml-1 h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#6c5a87]"
+                      ></path>
+                      <path
+                        d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
+                        className="fill-current text-[#9a7ec9]"
+                      ></path>
+                      <path
+                        d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#8f72bb]"
+                      ></path>
+                    </svg>
+                    <span className="-mr-1 font-medium">New Entry</span>
+                  </a>
                 </li>
               </ul>
-                     <ul className="mt-4 space-y-2 tracking-wide">
+              <ul className="mt-4 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("Customer");
@@ -376,33 +374,33 @@ const App = () => {
                     aria-label="Customer"
                     className={
                       activeLink == "Customer"
-                  ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
-      : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
+                        ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
+                        : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
                     }
                   >
-                     <svg
-    className="-ml-1 h-6 w-6"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
-    <path
-      d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#6c5a87]"
-    ></path>
-    <path
-      d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
-      className="fill-current text-[#9a7ec9]"
-    ></path>
-    <path
-      d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#8f72bb]"
-    ></path>
-  </svg>
+                    <svg
+                      className="-ml-1 h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#6c5a87]"
+                      ></path>
+                      <path
+                        d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
+                        className="fill-current text-[#9a7ec9]"
+                      ></path>
+                      <path
+                        d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#8f72bb]"
+                      ></path>
+                    </svg>
                     <span className="-mr-1 font-medium">Customer</span>
                   </a>
                 </li>
               </ul>
-                    <ul className="mt-4 space-y-2 tracking-wide">
+              <ul className="mt-4 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("Product");
@@ -415,33 +413,33 @@ const App = () => {
                     aria-label="Product"
                     className={
                       activeLink == "Product"
-                   ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
-      : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
+                        ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
+                        : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
                     }
                   >
                     <svg
-    className="-ml-1 h-6 w-6"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
-    <path
-      d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#6c5a87]"
-    ></path>
-    <path
-      d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
-      className="fill-current text-[#9a7ec9]"
-    ></path>
-    <path
-      d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#8f72bb]"
-    ></path>
-  </svg>
+                      className="-ml-1 h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#6c5a87]"
+                      ></path>
+                      <path
+                        d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
+                        className="fill-current text-[#9a7ec9]"
+                      ></path>
+                      <path
+                        d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#8f72bb]"
+                      ></path>
+                    </svg>
                     <span className="-mr-1 font-medium">Products</span>
                   </a>
                 </li>
               </ul>
-                    <ul className="mt-4 space-y-2 tracking-wide">
+              <ul className="mt-4 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("Staff");
@@ -454,33 +452,33 @@ const App = () => {
                     aria-label="Staff"
                     className={
                       activeLink == "Staff"
-                         ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
-      : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
+                        ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
+                        : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
                     }
                   >
                     <svg
-    className="-ml-1 h-6 w-6"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
-    <path
-      d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#6c5a87]"
-    ></path>
-    <path
-      d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
-      className="fill-current text-[#9a7ec9]"
-    ></path>
-    <path
-      d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#8f72bb]"
-    ></path>
-  </svg>
+                      className="-ml-1 h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#6c5a87]"
+                      ></path>
+                      <path
+                        d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
+                        className="fill-current text-[#9a7ec9]"
+                      ></path>
+                      <path
+                        d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#8f72bb]"
+                      ></path>
+                    </svg>
                     <span className="-mr-1 font-medium">Staff</span>
                   </a>
                 </li>
               </ul>
-                    <ul className="mt-4 space-y-2 tracking-wide">
+              {/* <ul className="mt-4 space-y-2 tracking-wide">
                 <li
                   onClick={() => {
                     setActiveLink("Services");
@@ -494,31 +492,31 @@ const App = () => {
                     className={
                       activeLink == "Services"
                         ? "relative flex items-center space-x-4 rounded-xl bg-[#a997cb] px-1 py-2 text-black"
-      : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
+                        : "relative flex items-center space-x-4 rounded-xl px-1 py-2 text-gray-600 hover:bg-[#e1d9f7]"
                     }
                   >
-                   <svg
-    className="-ml-1 h-6 w-6"
-    viewBox="0 0 24 24"
-    fill="none"
-  >
-    <path
-      d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#6c5a87]"
-    ></path>
-    <path
-      d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
-      className="fill-current text-[#9a7ec9]"
-    ></path>
-    <path
-      d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
-      className="fill-current text-[#8f72bb]"
-    ></path>
-  </svg>
+                    <svg
+                      className="-ml-1 h-6 w-6"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                    >
+                      <path
+                        d="M6 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8ZM6 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#6c5a87]"
+                      ></path>
+                      <path
+                        d="M13 8a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2V8Z"
+                        className="fill-current text-[#9a7ec9]"
+                      ></path>
+                      <path
+                        d="M13 15a2 2 0 0 1 2-2h1a2 2 0 0 1 2 2v1a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-1Z"
+                        className="fill-current text-[#8f72bb]"
+                      ></path>
+                    </svg>
                     <span className="-mr-1 font-medium">Services</span>
                   </a>
                 </li>
-              </ul>
+              </ul> */}
             </div>
 
             <div className="-mx-6 md:flex hidden items-center justify-between border-t px-6 pt-4 dark:border-gray-700">
@@ -573,34 +571,34 @@ const App = () => {
 
             <div className="px-6 pt-6 bg-white">
               <Routes>
-                <Route path="/" element={<Home />} />
-                   <Route path="/LaundryBill" element={<LaundryBill />} />
-                   <Route path="/LaundryBill/:id" element={<LaundryBill />} />
-                          <Route path="/CustomerForm" element={<CustomerForm />} />
-                           <Route path="/CustomerList1" element={<CustomerList1 />} />
-                             <Route path="/invoice/:customerId" element={<InvoiceForm />} />
-                               <Route path="/InvoiceForm" element={<InvoiceForm />} />
-                                <Route path="/customerlist" element={<CustomerList/>} />
-                                  <Route path="/customerform" element={<CustomerForm/>} />
-                                   <Route path="/customerform/:id" element={<CustomerForm/>} />
+                <Route path="/dashboard" element={<Dashboard />} />
 
+                <Route path="/LaundryBill" element={<LaundryBill />} />
+                <Route path="/LaundryBill/:id" element={<LaundryBill />} />
+                <Route path="/CustomerForm" element={<CustomerForm />} />
+                <Route path="/CustomerList1" element={<CustomerList1 />} />
+                <Route path="/invoice/:customerId" element={<InvoiceForm />} />
+                <Route path="/InvoiceForm" element={<InvoiceForm />} />
+                <Route path="/customerlist" element={<CustomerList />} />
+                <Route path="/customerform" element={<CustomerForm />} />
+                <Route path="/customerform/:id" element={<CustomerForm />} />
 
-                                  <Route path="/productlist" element={<ProductList/>}/>
-                                  <Route path="/productform" element={<ProductForm/>}/>
-                                  <Route path="/productform/:id" element={<ProductForm/>}/>
+                <Route path="/productlist" element={<ProductList />} />
+                <Route path="/productform" element={<ProductForm />} />
+                <Route path="/productform/:id" element={<ProductForm />} />
 
-                                   <Route path="/stafflist" element={<StaffList/>}/>
-                                   <Route path="/staffform" element={<StaffForm/>}/>
-                                   <Route path="/staffform/:id" element={<StaffForm/>}/>
+                <Route path="/stafflist" element={<StaffList />} />
+                <Route path="/staffform" element={<StaffForm />} />
+                <Route path="/staffform/:id" element={<StaffForm />} />
 
-                                   <Route path="/servicelist" element={<ServiceList/>}/>
-                                   <Route path="/serviceform" element={<ServiceForm/>}/>
-                                   <Route path="/serviceform/:id" element={<ServiceForm/>}/>
+                <Route path="/servicelist" element={<ServiceList />} />
+                <Route path="/serviceform" element={<ServiceForm />} />
+                <Route path="/serviceform/:id" element={<ServiceForm />} />
 
-                                   <Route path="/entrylist" element={<EntryList/>}/>
-                                   <Route path="/entryform" element={<EntryForm/>}/>
-                                   <Route path="/entryform/:id" element={<EntryForm/>}/>
-
+                <Route path="/entrylist" element={<EntryList />} />
+                <Route path="/entryform" element={<EntryForm />} />
+                <Route path="/entryform/:id" element={<EntryForm />} />
+                <Route path="/qr-tags/:id" element={<QrSection />} />
               </Routes>
             </div>
           </div>

@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
 
-const StaffForm = () => {
+const ModalCustomer = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
+  const fromEntryForm = location.state?.fromEntryForm;
 
   const [formData, setFormData] = useState({
     firstName: "",
@@ -13,6 +15,7 @@ const StaffForm = () => {
     phone: "",
     email: "",
     address: "",
+    postalCode: "",
   });
   const [loading, setLoading] = useState(false);
 
@@ -22,7 +25,7 @@ const StaffForm = () => {
         setLoading(true);
         try {
           const res = await axios.get(
-            `https://dirt-off-backend-main.vercel.app/staff/${id}`
+            `https://dirt-off-backend-main.vercel.app/custdirt/${id}`
           );
           setFormData(res.data.data);
         } catch (err) {
@@ -47,17 +50,27 @@ const StaffForm = () => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-backend-main.vercel.app/staff/update/${id}`
-      : "https://dirt-off-backend-main.vercel.app/staff/create";
+      ? `https://dirt-off-deploy.onrender.com/custdirt/update/${id}`
+      : "https://dirt-off-deploy.onrender.com/custdirt/create";
 
     const method = id ? "put" : "post";
 
     try {
-      await axios[method](url, formData);
+      const res = await axios[method](url, formData);
+
       toast.success(
-        id ? "Staff updated successfully!" : "Staff added successfully!"
+        id ? "Customer updated successfully!" : "Customer added successfully!"
       );
-      navigate("/stafflist");
+
+      if (isPopup && onSubmitSuccess) {
+        onSubmitSuccess(formData);
+        if (onCancel) {
+          onCancel(); // Close the modal after successful submission
+        }
+        return;
+      }
+
+      navigate("/entryform");
     } catch (err) {
       toast.error(err.response?.data?.message || "Something went wrong");
     } finally {
@@ -68,24 +81,30 @@ const StaffForm = () => {
   return (
     <div>
       <div className="flex justify-end mb-4">
-        <button
-          onClick={() => navigate("/stafflist")}
+        {/* <button
+          onClick={() => {
+            if (fromEntryForm) {
+              navigate("/entryform");
+            } else {
+              navigate("/customerlist");
+            }
+          }}
           className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
         >
           ← Back
-        </button>
+        </button>{" "} */}
       </div>
       <form
         onSubmit={handleSubmit}
         className="max-w-2xl mx-auto bg-white shadow p-6 rounded-lg space-y-4"
       >
-        <h2 className="text-xl font-semibold text-[#a997cb] mb-4">
-          {id ? "Edit Staff" : "Add Staff"}
+        <h2 className="text-xl font-semibold text-theme-purple mb-4">
+          {id ? "Edit Customer" : "Add Customer"}
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-gray-700">
               First Name *
             </label>
             <input
@@ -98,7 +117,7 @@ const StaffForm = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-gray-700">
               Last Name
             </label>
             <input
@@ -110,7 +129,7 @@ const StaffForm = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-gray-700">
               Phone *
             </label>
             <input
@@ -125,7 +144,7 @@ const StaffForm = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-gray-700">
               Email *
             </label>
             <input
@@ -138,7 +157,7 @@ const StaffForm = () => {
             />
           </div>
           <div className="sm:col-span-2">
-            <label className="block text-sm font-medium text-gray-600">
+            <label className="block text-sm font-medium text-gray-700">
               Address
             </label>
             <input
@@ -149,18 +168,32 @@ const StaffForm = () => {
               className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
             />
           </div>
+          <div className="sm:col-span-2">
+            <label className="block text-sm font-medium text-gray-700">
+              Postal Code
+            </label>
+            <input
+              name="postalCode"
+              type="text"
+              value={formData.postalCode}
+              onChange={handleChange}
+              pattern="\d{6}"
+              className="mt-1 block w-full border border-gray-300 rounded px-3 py-2 text-sm"
+              placeholder="6-digit code"
+            />
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="mt-4 bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
+          className="mt-4 bg-theme-purple text-white px-5 py-2 rounded hover:bg-theme-purple-dark transition disabled:opacity-50"
         >
-          {loading ? "Saving..." : id ? "Update Staff" : "Add Staff"}
+          {loading ? "Saving..." : id ? "Update Customer" : "Add Customer"}
         </button>
       </form>
     </div>
   );
 };
 
-export default StaffForm;
+export default ModalCustomer;

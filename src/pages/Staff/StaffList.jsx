@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Link } from 'react-router-dom';
-import toast from 'react-hot-toast';
-import { FaTrashAlt, FaEdit } from 'react-icons/fa';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FaTrashAlt, FaEdit } from "react-icons/fa";
 
 const StaffList = () => {
   const [staff, setStaff] = useState([]);
@@ -10,7 +10,7 @@ const StaffList = () => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
   const limit = 10;
 
@@ -18,11 +18,13 @@ const StaffList = () => {
     setLoading(true);
     setIsSearching(false);
     try {
-      const res = await axios.get(`https://dirt-off-deploy.onrender.com/staff/pagination?page=${pageNumber}&limit=${limit}`);
+      const res = await axios.get(
+        `https://dirt-off-backend-main.vercel.app/staff/pagination?page=${pageNumber}&limit=${limit}`
+      );
       setStaff(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
     } catch (err) {
-      setError('Failed to fetch staff');
+      setError("Failed to fetch staff");
     } finally {
       setLoading(false);
     }
@@ -37,12 +39,14 @@ const StaffList = () => {
     setLoading(true);
     setIsSearching(true);
     try {
-      const res = await axios.get(`https://dirt-off-deploy.onrender.com/staff/search?q=${searchQuery}`);
+      const res = await axios.get(
+        `https://dirt-off-backend-main.vercel.app/staff/search?q=${searchQuery}`
+      );
       setStaff(res.data.data || []);
       setTotalPages(1); // Disable pagination while searching
     } catch (err) {
       setStaff([]);
-      toast.error('No staff found');
+      toast.error("No staff found");
     } finally {
       setLoading(false);
     }
@@ -55,19 +59,23 @@ const StaffList = () => {
   }, [page, isSearching]);
 
   const handleDelete = async (id) => {
-    const confirm = window.confirm('Are you sure you want to delete this staff member?');
+    const confirm = window.confirm(
+      "Are you sure you want to delete this staff member?"
+    );
     if (!confirm) return;
 
     try {
-      await axios.delete(`https://dirt-off-deploy.onrender.com/staff/delete/${id}`);
-      toast.success('Staff deleted successfully');
+      await axios.delete(
+        `https://dirt-off-backend-main.vercel.app/staff/delete/${id}`
+      );
+      toast.success("Staff deleted successfully");
       if (isSearching) {
         searchStaff();
       } else {
         fetchStaff(page);
       }
     } catch (err) {
-      toast.error('Failed to delete staff');
+      toast.error("Failed to delete staff");
     }
   };
 
@@ -98,16 +106,16 @@ const StaffList = () => {
           placeholder="Search staff by name, phone, or email..."
           className="border border-gray-300 px-4 py-2 rounded w-full"
         />
-        <button
+        {/* <button
           onClick={searchStaff}
           className="bg-[#a997cb] text-white px-4 py-2 rounded hover:bg-[#8a82b5]"
         >
           Search
-        </button>
+        </button> */}
         {isSearching && (
           <button
             onClick={() => {
-              setSearchQuery('');
+              setSearchQuery("");
               setIsSearching(false);
               setPage(1);
               fetchStaff(1);
@@ -119,31 +127,41 @@ const StaffList = () => {
         )}
       </div>
 
-      {loading ? (
-        <p className="text-gray-600 text-center mt-10">Loading staff...</p>
-      ) : staff.length === 0 ? (
-        <p className={`text-center mt-10 ${isSearching ? 'text-red-600' : 'text-gray-500'}`}>
-          {isSearching
-            ? `No staff found matching "${searchQuery}".`
-            : 'No staff found.'}
-        </p>
-      ) : (
-        <>
-          <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 shadow-sm rounded-lg overflow-hidden">
-              <thead className="bg-[#e6e1f1] text-[#4b3f72]">
+      <>
+        <div className="overflow-x-auto">
+          <table className="min-w-full border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+            <thead className="bg-[#e6e1f1] text-[#a997cb]">
+              <tr>
+                <th className="text-center px-4 py-2 border">S No.</th>
+                <th className="text-left px-4 py-2 border">First Name</th>
+                <th className="text-left px-4 py-2 border">Last Name</th>
+                <th className="text-left px-4 py-2 border">Phone</th>
+                <th className="text-left px-4 py-2 border">Email</th>
+                <th className="text-left px-4 py-2 border">Address</th>
+                <th className="text-center px-4 py-2 border">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="bg-white">
+              {loading ? (
                 <tr>
-                  <th className="text-left px-4 py-2 border">First Name</th>
-                  <th className="text-left px-4 py-2 border">Last Name</th>
-                  <th className="text-left px-4 py-2 border">Phone</th>
-                  <th className="text-left px-4 py-2 border">Email</th>
-                  <th className="text-left px-4 py-2 border">Address</th>
-                  <th className="text-center px-4 py-2 border">Actions</th>
+                  <td colSpan="7" className="text-center py-8 text-gray-600">
+                    Loading staff...
+                  </td>
                 </tr>
-              </thead>
-              <tbody className="bg-white">
-                {staff.map((cust) => (
+              ) : staff.length === 0 ? (
+                <tr>
+                  <td colSpan="7" className="text-center py-8 text-gray-500">
+                    {isSearching
+                      ? `No staff found matching "${searchQuery}".`
+                      : "No staff found."}
+                  </td>
+                </tr>
+              ) : (
+                staff.map((cust, index) => (
                   <tr key={cust._id} className="hover:bg-gray-50">
+                    <td className="px-4 py-2 border text-center">
+                      {isSearching ? index + 1 : (page - 1) * limit + index + 1}
+                    </td>
                     <td className="px-4 py-2 border">{cust.firstName}</td>
                     <td className="px-4 py-2 border">{cust.lastName}</td>
                     <td className="px-4 py-2 border">{cust.phone}</td>
@@ -164,45 +182,47 @@ const StaffList = () => {
                       </button>
                     </td>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
 
-          {/* Pagination */}
-          {!isSearching && (
-            <div className="flex justify-center items-center mt-6 space-x-2">
+        {/* Pagination */}
+
+        {/* Pagination */}
+        {!isSearching && !loading && staff.length > 0 && (
+          <div className="flex justify-center items-center mt-6 space-x-2">
+            <button
+              onClick={() => handlePageChange(page - 1)}
+              disabled={page === 1}
+              className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+            >
+              Previous
+            </button>
+            {[...Array(totalPages)].map((_, i) => (
               <button
-                onClick={() => handlePageChange(page - 1)}
-                disabled={page === 1}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+                key={i}
+                onClick={() => handlePageChange(i + 1)}
+                className={`px-3 py-1 rounded ${
+                  page === i + 1
+                    ? "bg-[#a997cb] text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
               >
-                Previous
+                {i + 1}
               </button>
-              {[...Array(totalPages)].map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => handlePageChange(i + 1)}
-                  className={`px-3 py-1 rounded ${
-                    page === i + 1
-                      ? 'bg-[#a997cb] text-white'
-                      : 'bg-gray-100 text-gray-600'
-                  }`}
-                >
-                  {i + 1}
-                </button>
-              ))}
-              <button
-                onClick={() => handlePageChange(page + 1)}
-                disabled={page === totalPages}
-                className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
-              >
-                Next
-              </button>
-            </div>
-          )}
-        </>
-      )}
+            ))}
+            <button
+              onClick={() => handlePageChange(page + 1)}
+              disabled={page === totalPages}
+              className="px-3 py-1 bg-[#e7e3f5] text-[#a997cb] rounded disabled:opacity-50"
+            >
+              Next
+            </button>
+          </div>
+        )}
+      </>
     </div>
   );
 };
