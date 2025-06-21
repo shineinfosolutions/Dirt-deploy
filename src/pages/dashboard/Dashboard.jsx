@@ -10,6 +10,7 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import axios from "axios";
+import LoadingOverlay from "../../components/LoadingOverlay";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -20,6 +21,8 @@ const Dashboard = () => {
     todayExpected: 0,
     collectedOrders: 0,
   });
+
+  const [loading, setLoading] = useState(true);
 
   const [apiData, setApiData] = useState({
     yearlySales: [],
@@ -44,12 +47,12 @@ const Dashboard = () => {
   });
 
   const [activeView, setActiveView] = useState("sales");
+  const [markLoading, setMarkLoading] = useState(false);
 
-  // Fetch data from API
+  // Fetch sales stats
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchSalesStats = async () => {
       try {
-        // Fetch sales stats
         const salesResponse = await axios.get(
           "https://dirt-off-backend-main.vercel.app/entry/stats/recent"
         );
@@ -66,53 +69,103 @@ const Dashboard = () => {
           weeklyData: salesData.weeklyData,
         });
 
-        // Fetch delivery summary
-        const summaryResponse = await axios.get(
-          "https://dirt-off-backend-main.vercel.app/entry/pending/deliveries"
-        );
-        const summary = summaryResponse.data.data.summary;
-
-        // Update stats with summary data
-        setStats({
-          newOrders: summary.todayReceived.count || 0,
-          todayExpected: summary.todayExpected.count || 0,
-          pendingOrders: summary.pending.count || 0,
-          collectedOrders: summary.collected.count || 0,
-          deliveredOrders: summary.delivered.count || 0,
-          totalSales: totalSalesCalculated,
-        });
-
-        // Fetch detailed data in background
-        const types = [
-          "pending",
-          "collected",
-          "delivered",
-          "todayExpected",
-          "todayReceived",
-        ];
-        types.forEach(async (type) => {
-          try {
-            const res = await axios.get(
-              `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=${type}&page=1`
-            );
-            const key =
-              type === "todayReceived"
-                ? "todayReceivedOrders"
-                : type === "todayExpected"
-                ? "todayExpectedDeliveries"
-                : type;
-            setDeliveryData((prev) => ({ ...prev, [key]: res.data.data }));
-          } catch (error) {
-            console.error(`${type} background fetch failed:`, error);
-          }
-        });
+        setStats((prev) => ({ ...prev, totalSales: totalSalesCalculated }));
       } catch (error) {
-        console.error("Error fetching stats:", error);
+        console.error("Error fetching sales stats:", error);
       }
     };
 
-    fetchStats();
+    fetchSalesStats();
   }, []);
+
+  // Fetch delivery summary
+  useEffect(() => {
+    const fetchDeliverySummary = async () => {
+      try {
+        const summaryResponse = await axios.get(
+          "https://dirt-off-backend-main.vercel.app/entry/stats"
+        );
+        const data = summaryResponse.data.data;
+
+        setStats((prev) => ({
+          ...prev,
+          newOrders: data.todayReceivedCount || 0,
+          todayExpected: data.todayExpectedCount || 0,
+          pendingOrders: data.pendingCount || 0,
+          collectedOrders: data.collectedCount || 0,
+          deliveredOrders: data.deliveredCount || 0,
+        }));
+      } catch (error) {
+        console.error("Error fetching delivery summary:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDeliverySummary();
+  }, []);
+
+  // Fetch detailed delivery data
+  // useEffect(() => {
+  //   const fetchDetailedDeliveryData = async () => {
+  //     const types = [
+  //       "pending",
+  //       "collected",
+  //       "delivered",
+  //       "todayExpected",
+  //       "todayReceived",
+  //     ];
+
+  //     types.forEach(async (type) => {
+  //       try {
+  //         const res = await axios.get(
+  //           `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=${type}&page=1`
+  //         );
+  //         const key =
+  //           type === "todayReceived"
+  //             ? "todayReceivedOrders"
+  //             : type === "todayExpected"
+  //             ? "todayExpectedDeliveries"
+  //             : type;
+  //         setDeliveryData((prev) => ({ ...prev, [key]: res.data.data }));
+  //       } catch (error) {
+  //         console.error(`${type} background fetch failed:`, error);
+  //       }
+  //     });
+  //   };
+
+  //   fetchDetailedDeliveryData();
+  // }, []);
+
+  // Add this function after the existing functions
+  const handleCardClick = async (viewType) => {
+    setActiveView(viewType);
+
+    const typeMap = {
+      newOrders: "todayReceived",
+      todayExpected: "todayExpected",
+      pending: "pending",
+      collected: "collected",
+      delivered: "delivered",
+    };
+
+    const apiType = typeMap[viewType];
+    if (apiType) {
+      try {
+        const data = await fetchDetailedData(apiType, 1);
+        const key =
+          apiType === "todayReceived"
+            ? "todayReceivedOrders"
+            : apiType === "todayExpected"
+            ? "todayExpectedDeliveries"
+            : apiType;
+        setDeliveryData((prev) => ({ ...prev, [key]: data }));
+        setCurrentPages((prev) => ({ ...prev, [apiType]: 1 }));
+      } catch (error) {
+        console.error(`Failed to fetch ${viewType} data:`, error);
+      }
+    }
+  };
 
   const fetchDetailedData = async (type, page = 1) => {
     try {
@@ -136,6 +189,72 @@ const Dashboard = () => {
         : type;
     setDeliveryData((prev) => ({ ...prev, [key]: data }));
     setCurrentPages((prev) => ({ ...prev, [type]: newPage }));
+  };
+
+  // Add this function after the existing functions
+  const handleMarkAsCollected = async (orderId) => {
+    setMarkLoading(true);
+    try {
+      await axios.put(
+        `https://dirt-off-backend-main.vercel.app/entry/update/${orderId}`,
+        {
+          status: "delivered",
+        }
+      );
+
+      // Refresh the data
+      const res = await axios.get(
+        `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=todayExpected&page=${currentPages.todayExpected}`
+      );
+      setDeliveryData((prev) => ({
+        ...prev,
+        todayExpectedDeliveries: res.data.data,
+      }));
+
+      // Update stats
+      setStats((prev) => ({
+        ...prev,
+        todayExpected: prev.todayExpected - 1,
+        collectedOrders: prev.collectedOrders + 1,
+      }));
+    } catch (error) {
+      console.error("Failed to mark as collected:", error);
+    } finally {
+      setMarkLoading(false);
+    }
+  };
+
+  // Add this function after handleMarkAsCollected
+  const handleMarkPendingAsCollected = async (orderId) => {
+    setMarkLoading(true);
+    try {
+      await axios.put(
+        `https://dirt-off-backend-main.vercel.app/entry/update/${orderId}`,
+        {
+          status: "collected",
+        }
+      );
+
+      // Refresh the pending data
+      const res = await axios.get(
+        `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=pending&page=${currentPages.pending}`
+      );
+      setDeliveryData((prev) => ({
+        ...prev,
+        pending: res.data.data,
+      }));
+
+      // Update stats
+      setStats((prev) => ({
+        ...prev,
+        pendingOrders: prev.pendingOrders - 1,
+        collectedOrders: prev.collectedOrders + 1,
+      }));
+    } catch (error) {
+      console.error("Failed to mark as collected:", error);
+    } finally {
+      setMarkLoading(false);
+    }
   };
 
   // Process data for charts
@@ -264,9 +383,19 @@ const Dashboard = () => {
                           Receipt #{order.receiptNo}
                         </p>
                       </div>
-                      <span className="text-sm text-blue-600">
-                        Expected Today
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-blue-600">
+                          Expected Today
+                        </span>
+                        <button
+                          onClick={() =>
+                            handleMarkPendingAsCollected(order._id)
+                          }
+                          className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
+                        >
+                          Mark as Delivered
+                        </button>
+                      </div>
                     </div>
                   )
                 )
@@ -406,9 +535,17 @@ const Dashboard = () => {
                         Receipt #{order.receiptNo}
                       </p>
                     </div>
-                    <span className="text-sm bg-yellow-600 text-white px-2 py-1 rounded-full">
-                      Pending
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm bg-yellow-600 text-white px-2 py-1 rounded-full">
+                        Pending
+                      </span>
+                      <button
+                        onClick={() => handleMarkPendingAsCollected(order._id)}
+                        className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
+                      >
+                        Mark as Collected
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -468,13 +605,21 @@ const Dashboard = () => {
                         Receipt #{order.receiptNo}
                       </p>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {order.pickupAndDelivery?.pickupDate
-                        ? new Date(
-                            order.pickupAndDelivery.pickupDate
-                          ).toLocaleDateString()
-                        : "No pickup date"}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm text-gray-500">
+                        {order.pickupAndDelivery?.pickupDate
+                          ? new Date(
+                              order.pickupAndDelivery.pickupDate
+                            ).toLocaleDateString()
+                          : "No pickup date"}
+                      </span>
+                      <button
+                        onClick={() => handleMarkPendingAsCollected(order._id)}
+                        className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
+                      >
+                        Mark as Delivered
+                      </button>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -834,183 +979,199 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="p-6 bg-gradient-to-br from-purple-100 via-white to-purple-50 min-h-screen">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-          <FaTshirt className="text-[#a997cb]" />
-          Laundry Dashboard
-        </h1>
-        <p className="text-gray-600 mt-2">
-          Welcome back! Here's what's happening with your laundry business
-          today.
-        </p>
-      </div>
+    <div className="min-h-screen bg-gray-50 p-6">
+      <LoadingOverlay
+        isLoading={loading || markLoading}
+        message={
+          markLoading ? "Updating order status..." : "Loading dashboard data..."
+        }
+      />
+      <div className="p-6 bg-gradient-to-br from-purple-100 via-white to-purple-50 min-h-screen">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+            <FaTshirt className="text-[#a997cb]" />
+            Laundry Dashboard
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Welcome back! Here's what's happening with your laundry business
+            today.
+          </p>
+        </div>
 
-      {/* Stats Cards - 5 Cards */}
-      <div className="space-y-6 mb-8">
-        {/* First Row - 3 Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* New Orders */}
-          <div
-            onClick={() => setActiveView("newOrders")}
-            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">New Orders</p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {stats.newOrders}
-                </h3>
-                <p className="text-purple-500 text-xs mt-1">
-                  ↗ +12% from yesterday
-                </p>
+        {/* Stats Cards - 5 Cards */}
+        <div className="space-y-6 mb-8">
+          {/* First Row - 3 Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* New Orders */}
+            <div
+              onClick={() => handleCardClick("newOrders")}
+              className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-sm font-medium">
+                    New Orders
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {stats.newOrders}
+                  </h3>
+                  <p className="text-purple-500 text-xs mt-1">
+                    ↗ +12% from yesterday
+                  </p>
+                </div>
+                <div className="bg-purple-100 p-4 rounded-full">
+                  <FaShoppingCart className="text-purple-500 text-xl" />
+                </div>
               </div>
-              <div className="bg-purple-100 p-4 rounded-full">
-                <FaShoppingCart className="text-purple-500 text-xl" />
+            </div>
+
+            {/* Today's Expected Deliveries */}
+            <div
+              onClick={() => handleCardClick("todayExpected")}
+              className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-sm font-medium">
+                    Today's Expected
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {stats.todayExpected || 0}
+                  </h3>
+                  <p className="text-purple-500 text-xs mt-1">
+                    Deliveries today
+                  </p>
+                </div>
+                <div className="bg-purple-100 p-4 rounded-full">
+                  <FaClock className="text-purple-500 text-xl" />
+                </div>
+              </div>
+            </div>
+
+            {/* Pending Orders */}
+            <div
+              onClick={() => handleCardClick("pending")}
+              className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-sm font-medium">
+                    Pending Orders
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {stats.pendingOrders}
+                  </h3>
+                  <p className="text-purple-500 text-xs mt-1">In progress</p>
+                </div>
+                <div className="bg-purple-100 p-4 rounded-full">
+                  <FaSpinner className="text-purple-500 text-xl" />
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Today's Expected Deliveries */}
-          <div
-            onClick={() => setActiveView("todayExpected")}
-            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">
-                  Today's Expected
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {stats.todayExpected || 0}
-                </h3>
-                <p className="text-purple-500 text-xs mt-1">Deliveries today</p>
-              </div>
-              <div className="bg-purple-100 p-4 rounded-full">
-                <FaClock className="text-purple-500 text-xl" />
+          {/* Second Row - 3 Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Collected Orders */}
+            <div
+              onClick={() => handleCardClick("collected")}
+              className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-sm font-medium">
+                    Collected Orders
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {stats.collectedOrders}
+                  </h3>
+                  <p className="text-purple-500 text-xs mt-1">
+                    Ready for pickup
+                  </p>
+                </div>
+                <div className="bg-purple-100 p-4 rounded-full">
+                  <FaTshirt className="text-purple-500 text-xl" />
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Pending Orders */}
-          <div
-            onClick={() => setActiveView("pending")}
-            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">
-                  Pending Orders
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {stats.pendingOrders}
-                </h3>
-                <p className="text-purple-500 text-xs mt-1">In progress</p>
+            {/* Total Deliveries */}
+            <div
+              onClick={() => handleCardClick("delivered")}
+              className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-sm font-medium">
+                    Total Deliveries
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    {stats.deliveredOrders}
+                  </h3>
+                  <p className="text-purple-500 text-xs mt-1">
+                    ↗ +8% from yesterday
+                  </p>
+                </div>
+                <div className="bg-purple-100 p-4 rounded-full">
+                  <FaTruck className="text-purple-500 text-xl" />
+                </div>
               </div>
-              <div className="bg-purple-100 p-4 rounded-full">
-                <FaSpinner className="text-purple-500 text-xl" />
+            </div>
+
+            {/* Total Sales */}
+            <div
+              onClick={() => setActiveView("sales")}
+              className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-600 hover:shadow-xl transition-shadow cursor-pointer"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-gray-500 text-sm font-medium">
+                    Total Sales
+                  </p>
+                  <h3 className="text-2xl font-bold text-gray-800">
+                    ₹{stats.totalSales.toLocaleString()}
+                  </h3>
+                  <p className="text-purple-600 text-xs mt-1">
+                    ↗ +15% from last month
+                  </p>
+                </div>
+                <div className="bg-purple-100 p-4 rounded-full">
+                  <FaChartLine className="text-purple-600 text-xl" />
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Second Row - 3 Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Collected Orders */}
-          <div
-            onClick={() => setActiveView("collected")}
-            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">
-                  Collected Orders
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {stats.collectedOrders}
-                </h3>
-                <p className="text-purple-500 text-xs mt-1">Ready for pickup</p>
-              </div>
-              <div className="bg-purple-100 p-4 rounded-full">
-                <FaTshirt className="text-purple-500 text-xl" />
-              </div>
-            </div>
+        {renderContent()}
+
+        {/* Quick Actions */}
+        <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4">
+            Quick Actions
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+              <FaShoppingCart className="text-[#a997cb] text-2xl mb-2" />
+              <span className="text-sm font-medium">New Order</span>
+            </button>
+
+            <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+              <FaTruck className="text-[#8a82b5] text-2xl mb-2" />
+              <span className="text-sm font-medium">Delivery</span>
+            </button>
+
+            <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+              <FaTshirt className="text-purple-600 text-2xl mb-2" />
+              <span className="text-sm font-medium">Inventory</span>
+            </button>
+
+            <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
+              <FaChartLine className="text-purple-500 text-2xl mb-2" />
+              <span className="text-sm font-medium">Reports</span>
+            </button>
           </div>
-
-          {/* Total Deliveries */}
-          <div
-            onClick={() => setActiveView("delivered")}
-            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-500 hover:shadow-xl transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">
-                  Total Deliveries
-                </p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  {stats.deliveredOrders}
-                </h3>
-                <p className="text-purple-500 text-xs mt-1">
-                  ↗ +8% from yesterday
-                </p>
-              </div>
-              <div className="bg-purple-100 p-4 rounded-full">
-                <FaTruck className="text-purple-500 text-xl" />
-              </div>
-            </div>
-          </div>
-
-          {/* Total Sales */}
-          <div
-            onClick={() => setActiveView("sales")}
-            className="bg-white rounded-xl shadow-lg p-6 border-l-4 border-purple-600 hover:shadow-xl transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-500 text-sm font-medium">Total Sales</p>
-                <h3 className="text-2xl font-bold text-gray-800">
-                  ₹{stats.totalSales.toLocaleString()}
-                </h3>
-                <p className="text-purple-600 text-xs mt-1">
-                  ↗ +15% from last month
-                </p>
-              </div>
-              <div className="bg-purple-100 p-4 rounded-full">
-                <FaChartLine className="text-purple-600 text-xl" />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {renderContent()}
-
-      {/* Quick Actions */}
-      <div className="mt-8 bg-white rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold text-gray-800 mb-4">
-          Quick Actions
-        </h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-            <FaShoppingCart className="text-[#a997cb] text-2xl mb-2" />
-            <span className="text-sm font-medium">New Order</span>
-          </button>
-
-          <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-            <FaTruck className="text-[#8a82b5] text-2xl mb-2" />
-            <span className="text-sm font-medium">Delivery</span>
-          </button>
-
-          <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-            <FaTshirt className="text-purple-600 text-2xl mb-2" />
-            <span className="text-sm font-medium">Inventory</span>
-          </button>
-
-          <button className="flex flex-col items-center p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition-colors">
-            <FaChartLine className="text-purple-500 text-2xl mb-2" />
-            <span className="text-sm font-medium">Reports</span>
-          </button>
         </div>
       </div>
     </div>
