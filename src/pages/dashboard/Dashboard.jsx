@@ -48,6 +48,7 @@ const Dashboard = () => {
 
   const [activeView, setActiveView] = useState("sales");
   const [markLoading, setMarkLoading] = useState(false);
+  const [listLoading, setListLoading] = useState(false);
 
   // Fetch sales stats
   useEffect(() => {
@@ -78,30 +79,30 @@ const Dashboard = () => {
     fetchSalesStats();
   }, []);
 
+  const fetchDeliverySummary = async () => {
+    try {
+      const summaryResponse = await axios.get(
+        "https://dirt-off-backend-main.vercel.app/entry/stats"
+      );
+      const data = summaryResponse.data.data;
+
+      setStats((prev) => ({
+        ...prev,
+        newOrders: data.todayReceivedCount || 0,
+        todayExpected: data.todayExpectedCount || 0,
+        pendingOrders: data.pendingCount || 0,
+        collectedOrders: data.collectedCount || 0,
+        deliveredOrders: data.deliveredCount || 0,
+      }));
+    } catch (error) {
+      console.error("Error fetching delivery summary:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   // Fetch delivery summary
   useEffect(() => {
-    const fetchDeliverySummary = async () => {
-      try {
-        const summaryResponse = await axios.get(
-          "https://dirt-off-backend-main.vercel.app/entry/stats"
-        );
-        const data = summaryResponse.data.data;
-
-        setStats((prev) => ({
-          ...prev,
-          newOrders: data.todayReceivedCount || 0,
-          todayExpected: data.todayExpectedCount || 0,
-          pendingOrders: data.pendingCount || 0,
-          collectedOrders: data.collectedCount || 0,
-          deliveredOrders: data.deliveredCount || 0,
-        }));
-      } catch (error) {
-        console.error("Error fetching delivery summary:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchDeliverySummary();
   }, []);
 
@@ -140,7 +141,7 @@ const Dashboard = () => {
   // Add this function after the existing functions
   const handleCardClick = async (viewType) => {
     setActiveView(viewType);
-
+    setListLoading(true);
     const typeMap = {
       newOrders: "todayReceived",
       todayExpected: "todayExpected",
@@ -163,9 +164,33 @@ const Dashboard = () => {
         setCurrentPages((prev) => ({ ...prev, [apiType]: 1 }));
       } catch (error) {
         console.error(`Failed to fetch ${viewType} data:`, error);
+      } finally {
+        setListLoading(false);
       }
     }
   };
+
+  // Add skeleton component
+  const ListSkeleton = () =>
+    Array.from({ length: 3 }).map((_, index) => (
+      <div
+        key={index}
+        className="flex justify-between items-center px-4 py-3 bg-gray-100 rounded-lg border-l-4 border-gray-300 animate-pulse"
+      >
+        <div className="flex items-center gap-4">
+          <div className="w-12 h-12 bg-gray-300 rounded-full"></div>
+          <div>
+            <div className="h-4 bg-gray-300 rounded w-24 mb-2"></div>
+            <div className="h-3 bg-gray-300 rounded w-20 mb-1"></div>
+            <div className="h-3 bg-gray-300 rounded w-16"></div>
+          </div>
+        </div>
+        <div className="text-right">
+          <div className="h-6 bg-gray-300 rounded-full w-12 mb-1"></div>
+          <div className="h-3 bg-gray-300 rounded w-16"></div>
+        </div>
+      </div>
+    ));
 
   const fetchDetailedData = async (type, page = 1) => {
     try {
@@ -202,21 +227,25 @@ const Dashboard = () => {
         }
       );
 
-      // Refresh the data
-      const res = await axios.get(
-        `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=todayExpected&page=${currentPages.todayExpected}`
-      );
-      setDeliveryData((prev) => ({
-        ...prev,
-        todayExpectedDeliveries: res.data.data,
-      }));
+      // Refresh the collected data if currently viewing collected orders
+      if (activeView === "collected") {
+        const collectedRes = await axios.get(
+          `https://dirt-off-backend-main.vercel.app/entry/pending/deliveries?type=collected&page=${currentPages.collected}`
+        );
+        setDeliveryData((prev) => ({
+          ...prev,
+          collected: collectedRes.data.data,
+        }));
+      }
+      // Refresh delivery summary
+      await fetchDeliverySummary();
 
       // Update stats
-      setStats((prev) => ({
-        ...prev,
-        todayExpected: prev.todayExpected - 1,
-        collectedOrders: prev.collectedOrders + 1,
-      }));
+      // setStats((prev) => ({
+      //   ...prev,
+      //   todayExpected: prev.todayExpected - 1,
+      //   collectedOrders: prev.collectedOrders + 1,
+      // }));
     } catch (error) {
       console.error("Failed to mark as collected:", error);
     } finally {
@@ -294,32 +323,56 @@ const Dashboard = () => {
       case "newOrders":
         return (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              New Orders
-            </h3>
-            <div className="space-y-3">
-              {deliveryData.todayReceivedOrders.orders?.length > 0 ? (
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <FaShoppingCart className="text-purple-500" />
+                New Orders
+              </h3>
+              <span className="bg-purple-100 text-purple-700 px-3 py-1 rounded-full text-sm font-medium">
+                {deliveryData.todayReceivedOrders.count || 0} orders
+              </span>
+            </div>
+            <div className="space-y-4">
+              {listLoading ? (
+                <ListSkeleton />
+              ) : deliveryData.todayReceivedOrders.orders?.length > 0 ? (
                 deliveryData.todayReceivedOrders.orders.map((order, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center p-3 bg-purple-50 rounded-lg"
+                    className="flex justify-between items-center px-4 py-2 bg-gradient-to-r from-purple-50 to-purple-100 rounded-lg border-l-4 border-purple-400 hover:shadow-md transition-shadow"
                   >
-                    <div>
-                      <p className="font-medium">
-                        {order.customer || "Customer"}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Receipt #{order.receiptNo}
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-purple-200 rounded-full flex items-center justify-center">
+                        <span className="text-purple-700 font-bold text-lg">
+                          {(order.customer || "C").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {order.customer || "Customer"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Receipt #{order.receiptNo}
+                        </p>
+                        <p className="text-xs text-purple-600 font-medium">
+                          ₹{order.charges?.totalAmount || 0}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-sm bg-green-100 text-green-700 px-2 py-1 rounded-full">
+                        New
+                      </span>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(order.createdAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="text-sm text-gray-500">
-                      {new Date(order.createdAt).toLocaleDateString()}
-                    </span>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">No new orders today</p>
+                <div className="text-center py-12">
+                  <FaShoppingCart className="text-gray-300 text-5xl mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No new orders today</p>
                 </div>
               )}
             </div>
@@ -364,38 +417,48 @@ const Dashboard = () => {
       case "todayExpected":
         return (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Today's Expected Deliveries
-            </h3>
-            <div className="space-y-3">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <FaClock className="text-blue-500" />
+                Today's Expected Deliveries
+              </h3>
+              <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
+                {deliveryData.todayExpectedDeliveries.orders?.length || 0}{" "}
+                orders
+              </span>
+            </div>
+            <div className="space-y-4">
               {deliveryData.todayExpectedDeliveries.orders?.length > 0 ? (
                 deliveryData.todayExpectedDeliveries.orders.map(
                   (order, index) => (
                     <div
                       key={index}
-                      className="flex justify-between items-center p-3 bg-blue-50 rounded-lg"
+                      className="flex justify-between items-center px-4 py-2 bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg border-l-4 border-blue-400 hover:shadow-md transition-shadow"
                     >
-                      <div>
-                        <p className="font-medium">
-                          {order.customer || "Customer"}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          Receipt #{order.receiptNo}
-                        </p>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 bg-blue-200 rounded-full flex items-center justify-center">
+                          <span className="text-blue-700 font-bold text-lg">
+                            {(order.customer || "C").charAt(0).toUpperCase()}
+                          </span>
+                        </div>
+                        <div>
+                          <p className="font-semibold text-gray-800">
+                            {order.customer || "Customer"}
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            Receipt #{order.receiptNo}
+                          </p>
+                          <p className="text-xs text-blue-600 font-medium">
+                            Expected Today
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-blue-600">
-                          Expected Today
-                        </span>
-                        <button
-                          onClick={() =>
-                            handleMarkPendingAsCollected(order._id)
-                          }
-                          className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
-                        >
-                          Mark as Delivered
-                        </button>
-                      </div>
+                      <button
+                        onClick={() => handleMarkPendingAsCollected(order._id)}
+                        className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                      >
+                        Mark Delivered
+                      </button>
                     </div>
                   )
                 )
@@ -449,37 +512,56 @@ const Dashboard = () => {
       case "delivered":
         return (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Delivered Orders
-            </h3>
-            <div className="space-y-3">
-              {deliveryData.delivered.orders?.length > 0 ? (
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <FaTruck className="text-green-500" />
+                Delivered Orders
+              </h3>
+              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                {deliveryData.delivered.count || 0} orders
+              </span>
+            </div>
+            <div className="space-y-4">
+              {listLoading ? (
+                <ListSkeleton />
+              ) : deliveryData.delivered.orders?.length > 0 ? (
                 deliveryData.delivered.orders.map((order, index) => (
                   <div
-                    key={order.id}
-                    className="flex justify-between items-center p-3 bg-purple-50 rounded-lg"
+                    key={index}
+                    className="flex justify-between items-center  px-4 py-2  bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-l-4 border-green-400 hover:shadow-md transition-shadow"
                   >
-                    <div>
-                      <p className="font-medium">
-                        {order.customer || "Customer"}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Receipt #{order.receiptNo}
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
+                        <span className="text-green-700 font-bold text-lg">
+                          {(order.customer || "C").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {order.customer || "Customer"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Receipt #{order.receiptNo}
+                        </p>
+                        <p className="text-xs text-green-600 font-medium">
+                          ₹{order.charges?.totalAmount || 0}
+                        </p>
+                      </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm bg-green-600 text-white px-2 py-1 rounded-full">
+                      <span className="text-sm bg-green-600 text-white px-3 py-1 rounded-full">
                         Delivered
                       </span>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 mt-1">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">No delivered orders</p>
+                <div className="text-center py-12">
+                  <FaTruck className="text-gray-300 text-5xl mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No delivered orders</p>
                 </div>
               )}
             </div>
@@ -517,40 +599,54 @@ const Dashboard = () => {
       case "pending":
         return (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              To be collected
-            </h3>
-            <div className="space-y-3">
-              {deliveryData.pending.orders?.length > 0 ? (
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <FaSpinner className="text-yellow-500" />
+                Pending Orders
+              </h3>
+              <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">
+                {deliveryData.pending.count || 0} orders
+              </span>
+            </div>
+            <div className="space-y-4">
+              {listLoading ? (
+                <ListSkeleton />
+              ) : deliveryData.pending.orders?.length > 0 ? (
                 deliveryData.pending.orders.map((order, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg"
+                    className="flex justify-between items-center px-4 py-2 bg-gradient-to-r from-yellow-50 to-yellow-100 rounded-lg border-l-4 border-yellow-400 hover:shadow-md transition-shadow"
                   >
-                    <div>
-                      <p className="font-medium">
-                        {order.customer || "Customer"}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Receipt #{order.receiptNo}
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-yellow-200 rounded-full flex items-center justify-center">
+                        <span className="text-yellow-700 font-bold text-lg">
+                          {(order.customer || "C").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {order.customer || "Customer"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Receipt #{order.receiptNo}
+                        </p>
+                        <p className="text-xs text-yellow-500 font-medium">
+                          In Progress
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm bg-yellow-600 text-white px-2 py-1 rounded-full">
-                        Pending
-                      </span>
-                      <button
-                        onClick={() => handleMarkPendingAsCollected(order._id)}
-                        className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
-                      >
-                        Mark as Collected
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleMarkPendingAsCollected(order._id)}
+                      className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
+                    >
+                      Mark Collected
+                    </button>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <p className="text-gray-600">No pending orders</p>
+                <div className="text-center py-12">
+                  <FaSpinner className="text-gray-300 text-5xl mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">No pending orders</p>
                 </div>
               )}
             </div>
@@ -587,45 +683,60 @@ const Dashboard = () => {
       case "collected":
         return (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4">
-              Collected Orders
-            </h3>
-            <div className="space-y-3">
-              {deliveryData.collected.orders?.length > 0 ? (
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <FaTshirt className="text-orange-500" />
+                Collected Orders
+              </h3>
+              <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">
+                {deliveryData.collected.count || 0} orders
+              </span>
+            </div>
+            <div className="space-y-4">
+              {listLoading ? (
+                <ListSkeleton />
+              ) : deliveryData.collected.orders?.length > 0 ? (
                 deliveryData.collected.orders.map((order, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center p-3 bg-orange-50 rounded-lg"
+                    className="flex justify-between items-center  px-4 py-2  bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border-l-4 border-orange-400 hover:shadow-md transition-shadow"
                   >
-                    <div>
-                      <p className="font-medium">
-                        {order.customer || "Customer"}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        Receipt #{order.receiptNo}
-                      </p>
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center">
+                        <span className="text-orange-700 font-bold text-lg">
+                          {(order.customer || "C").charAt(0).toUpperCase()}
+                        </span>
+                      </div>
+                      <div>
+                        <p className="font-semibold text-gray-800">
+                          {order.customer || "Customer"}
+                        </p>
+                        <p className="text-sm text-gray-600">
+                          Receipt #{order.receiptNo}
+                        </p>
+                        <p className="text-xs text-orange-600 font-medium">
+                          {order.pickupAndDelivery?.pickupDate
+                            ? new Date(
+                                order.pickupAndDelivery.pickupDate
+                              ).toLocaleDateString()
+                            : "Ready for delivery"}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-gray-500">
-                        {order.pickupAndDelivery?.pickupDate
-                          ? new Date(
-                              order.pickupAndDelivery.pickupDate
-                            ).toLocaleDateString()
-                          : "No pickup date"}
-                      </span>
-                      <button
-                        onClick={() => handleMarkPendingAsCollected(order._id)}
-                        className="px-3 py-1 bg-orange-600 text-white text-sm rounded hover:bg-orange-700"
-                      >
-                        Mark as Delivered
-                      </button>
-                    </div>
+                    <button
+                      onClick={() => handleMarkAsCollected(order._id)}
+                      className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                    >
+                      Mark Delivered
+                    </button>
                   </div>
                 ))
               ) : (
-                <div className="text-center py-8">
-                  <FaTshirt className="text-purple-500 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-600">No orders collected yet</p>
+                <div className="text-center py-12">
+                  <FaTshirt className="text-gray-300 text-5xl mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">
+                    No orders collected yet
+                  </p>
                 </div>
               )}
             </div>
