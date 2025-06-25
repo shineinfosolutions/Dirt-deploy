@@ -141,10 +141,41 @@ const EntryList = () => {
     }
   };
 
+  const SkeletonRow = () => (
+    <tr className="animate-pulse">
+      <td className="px-4 py-2 border w-[100px]">
+        <div className="h-4 bg-gray-200 rounded "></div>
+      </td>
+      <td className="px-4 py-2 border  w-[115px]">
+        <div className="h-4 bg-gray-200 rounded"></div>
+      </td>
+      <td className="px-4 py-2 border w-[192px]">
+        <div className="h-4 bg-gray-200 rounded "></div>
+      </td>
+      <td className="px-4 py-2 border w-[144px]">
+        <div className="h-4 bg-gray-200 rounded w-20"></div>
+      </td>
+      <td className="px-4 py-2 border w-[155px]">
+        <div className="h-4 bg-gray-200 rounded w-16"></div>
+      </td>
+      <td className="px-4 py-2 border w-[155px]">
+        <div className="h-4 bg-gray-200 rounded w-16"></div>
+      </td>
+      <td className="px-4 py-2 border w-[93px]">
+        <div className="h-6 bg-gray-200 rounded"></div>
+      </td>
+      <td className="px-4 py-2 border w-[155px]">
+        <div className="flex justify-around">
+          <div className="h-4 bg-gray-200 rounded w-12"></div>
+        </div>
+      </td>
+    </tr>
+  );
+
   if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4">
+    <div className="max-w-[100%] mx-auto px-4 py-4 bg-gradient-to-br from-purple-100 via-white to-purple-50">
       <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold text-[#a997cb]">New Entries</h2>
         <Link
@@ -188,14 +219,28 @@ const EntryList = () => {
           <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden">
             <thead className="bg-[#e7e3f5] text-[#a997cb]">
               <tr>
-                <th className="text-left px-4 py-2">Rcpt No.</th>
-                <th className="text-left px-4 py-2">Customer</th>
-                {/* <th className="text-left px-4 py-2">Service</th> */}
-                <th className="text-left px-4 py-2">Products</th>
-                <th className="text-left px-4 py-2">Total Amount</th>
-                <th className="text-left px-4 py-2">Pickup</th>
-                <th className="text-left px-4 py-2">Delivery</th>
-                <th className="text-left px-4 py-2">Status</th>
+                <th className="text-left px-4 py-2 whitespace-nowrap">
+                  Rcpt No.
+                </th>
+                <th className="text-left px-4 py-2 whitespace-nowrap">
+                  Customer
+                </th>
+                {/* <th className="text-left px-4  whitespace-nowrappy-2">Service</th> */}
+                <th className="text-left px-4 py-2 whitespace-nowrap">
+                  Products
+                </th>
+                <th className="text-left px-4 py-2 whitespace-nowrap">
+                  Total Amount
+                </th>
+                <th className="text-left px-4 py-2 whitespace-nowrap">
+                  Pickup
+                </th>
+                <th className="text-left px-4 py-2 whitespace-nowrap">
+                  Delivery
+                </th>
+                <th className="text-left px-4 py-2 whitespace-nowrap">
+                  Status
+                </th>
 
                 <th className="text-center px-4 py-2">Actions</th>
               </tr>
@@ -203,11 +248,9 @@ const EntryList = () => {
 
             <tbody className="bg-white">
               {loading ? (
-                <tr>
-                  <td colSpan="8" className="text-center py-8 text-gray-600">
-                    Loading entries...
-                  </td>
-                </tr>
+                Array.from({ length: 5 }).map((_, index) => (
+                  <SkeletonRow key={index} />
+                ))
               ) : entries.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-gray-500">
@@ -286,6 +329,7 @@ const EntryList = () => {
             </tbody>
           </table>
         </div>
+        <SkeletonRow />
 
         {/* Pagination only when not searching and not loading */}
         {!isSearching && !loading && entries.length > 0 && (

@@ -1090,7 +1090,7 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
+    <div className="min-h-screen bg-gray-50 p-6 px-0">
       <LoadingOverlay
         isLoading={loading || markLoading}
         message={
