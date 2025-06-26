@@ -3,7 +3,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
-import Skeleton from "react-loading-skeleton";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);

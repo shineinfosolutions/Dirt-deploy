@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { FaTrashAlt, FaEdit } from "react-icons/fa";
+import { FaTrashAlt, FaEdit, FaWhatsapp } from "react-icons/fa";
 import { RiNewspaperLine } from "react-icons/ri";
 import QrSection from "../QrSection";
 
@@ -139,6 +139,37 @@ const EntryList = () => {
     } catch (err) {
       toast.error("Failed to update status");
     }
+  };
+
+  const handleWhatsAppShare = (entry) => {
+    if (!entry.customerPhone) {
+      toast.error("Customer phone number not available");
+      return;
+    }
+
+    const expectedDelivery = entry.pickupAndDelivery?.expectedDeliveryDate
+      ? new Date(
+          entry.pickupAndDelivery.expectedDeliveryDate
+        ).toLocaleDateString()
+      : "TBD";
+
+    const message = `Hi ${entry.customer},
+
+Your laundry order details:
+Receipt No: ${entry.receiptNo || "N/A"}
+Products: ${entry.products.map((p) => p.productName).join(", ")}
+Total Amount: ₹${entry.charges?.totalAmount?.toFixed(2)}
+Status: ${entry.status || "pending"}
+Expected Delivery: ${expectedDelivery}
+
+Thank you for choosing our service!`;
+
+    const phoneNumber = String(entry.customerPhone).replace(/[^\d]/g, "");
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+
+    window.open(whatsappUrl, "_blank");
   };
 
   const SkeletonRow = () => (
@@ -315,6 +346,13 @@ const EntryList = () => {
                         >
                           View
                         </Link>
+                        <button
+                          onClick={() => handleWhatsAppShare(entry)}
+                          className="text-sm text-green-600 hover:text-green-800 mr-4"
+                          title="Share on WhatsApp"
+                        >
+                          <FaWhatsapp />
+                        </button>
                         <Link
                           to={`/qr-tags/${entry._id}`}
                           className="text-sm text-[#7f59c5] hover:text-[#8a82b5] inline-flex hover:underline mr-4"
