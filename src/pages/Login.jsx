@@ -19,10 +19,13 @@ const Login = () => {
 
     try {
       setBtnDisable(true);
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
+      const res = await axios.post(
+        "https://dirt-off-backend-main.vercel.app/api/auth/login",
+        {
+          email,
+          password,
+        }
+      );
 
       if (res.data.success) {
         console.log("API Response:", res.data); // Add this line
