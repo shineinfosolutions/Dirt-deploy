@@ -25,7 +25,7 @@ const EntryList = () => {
 
     try {
       const res = await axios.get(
-        `http://localhost:5000/custdirt/${customerId}`
+        `https://dirt-off-backend-main.vercel.app/custdirt/${customerId}`
       );
       const customer = res.data.data;
       const fullName = `${customer.firstName} ${customer.lastName}`;
@@ -44,7 +44,7 @@ const EntryList = () => {
     setIsSearching(false);
     try {
       const res = await axios.get(
-        `http://localhost:5000/entry/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend-main.vercel.app/entry/pagination?page=${pageNumber}&limit=${limit}`
       );
       setEntries(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);

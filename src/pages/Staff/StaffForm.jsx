@@ -48,8 +48,8 @@ const StaffForm = () => {
     setLoading(true);
 
     const url = id
-      ? `http://localhost:5000/staff/update/${id}`
-      : "http://localhost:5000/staff/create";
+      ? `https://dirt-off-backend-main.vercel.app/staff/update/${id}`
+      : "https://dirt-off-backend-main.vercel.app/staff/create";
 
     const method = id ? "put" : "post";
 

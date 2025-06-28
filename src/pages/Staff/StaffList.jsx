@@ -22,7 +22,7 @@ const StaffList = () => {
     setIsSearching(false);
     try {
       const res = await axios.get(
-        `http://localhost:5000/staff/pagination?page=${pageNumber}&limit=${limit}`
+        `https://dirt-off-backend-main.vercel.app/staff/pagination?page=${pageNumber}&limit=${limit}`
       );
       setStaff(res.data.data || []);
       setTotalPages(res.data.totalPages || 1);
@@ -43,7 +43,7 @@ const StaffList = () => {
     setIsSearching(true);
     try {
       const res = await axios.get(
-        `http://localhost:5000/staff/search?q=${searchQuery}`
+        `https://dirt-off-backend-main.vercel.app/staff/search?q=${searchQuery}`
       );
       setStaff(res.data.data || []);
       setTotalPages(1); // Disable pagination while searching
@@ -68,7 +68,9 @@ const StaffList = () => {
     if (!confirm) return;
 
     try {
-      await axios.delete(`http://localhost:5000/staff/delete/${id}`);
+      await axios.delete(
+        `https://dirt-off-backend-main.vercel.app/staff/delete/${id}`
+      );
       toast.success("Staff deleted successfully");
       if (isSearching) {
         searchStaff();
