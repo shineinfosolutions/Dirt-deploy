@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import LoadingOverlay from "../../components/LoadingOverlay";
+import Loader from "../Loader";
 
 const StaffList = () => {
   const [staff, setStaff] = useState([]);
@@ -35,7 +36,7 @@ const StaffList = () => {
 
   const searchStaff = async () => {
     if (!searchQuery.trim()) {
-      fetchStaff(1); // Reset list
+      fetchStaff(1);
       return;
     }
 
@@ -45,15 +46,31 @@ const StaffList = () => {
       const res = await axios.get(
         `https://dirt-off-backend-main.vercel.app/staff/search?q=${searchQuery}`
       );
-      setStaff(res.data.data || []);
-      setTotalPages(1); // Disable pagination while searching
+      const sortedStaff = (res.data.data || []).sort((a, b) =>
+        a.firstName.localeCompare(b.firstName)
+      );
+      setStaff(sortedStaff);
+      setTotalPages(1);
+      setLoading(false);
     } catch (err) {
+      toast.error("No results found");
       setStaff([]);
-      toast.error("No staff found");
-    } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim()) {
+        searchStaff();
+      } else {
+        setIsSearching(false);
+        fetchStaff(1);
+      }
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery]);
 
   useEffect(() => {
     if (!isSearching) {
@@ -152,6 +169,14 @@ const StaffList = () => {
       <>
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+            {loading && (
+              <div className="md:hidden flex justify-center items-center px-20 ml-10 py-16 rounded-lg  mb-4">
+                <div className="text-center">
+                  <Loader />
+                  {/* <p className="text-gray-500 mt-2">Loading customers...</p> */}
+                </div>
+              </div>
+            )}
             <thead className="bg-[#e6e1f1] text-[#a997cb]">
               <tr>
                 <th className="text-center px-4 py-2 border">S No.</th>
@@ -159,7 +184,6 @@ const StaffList = () => {
                 <th className="text-left px-4 py-2 border">Last Name</th>
                 <th className="text-left px-4 py-2 border">Phone</th>
                 <th className="text-left px-4 py-2 border">Email</th>
-                <th className="text-left px-4 py-2 border">Password</th>
                 <th className="text-left px-4 py-2 border">Address</th>
                 <th className="text-center px-4 py-2 border">Actions</th>
               </tr>
@@ -167,8 +191,10 @@ const StaffList = () => {
             <tbody className="bg-white">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="text-center py-8 text-gray-600">
-                    Loading staff...
+                  <td colSpan="7" className="py-8">
+                    <div className="flex justify-center items-center w-full min-h-[100px]">
+                      <Loader />
+                    </div>
                   </td>
                 </tr>
               ) : staff.length === 0 ? (
@@ -189,7 +215,6 @@ const StaffList = () => {
                     <td className="px-4 py-2 border">{cust.lastName}</td>
                     <td className="px-4 py-2 border">{cust.phone}</td>
                     <td className="px-4 py-2 border">{cust.email}</td>
-                    <td className="px-4 py-2 border">{cust.password}</td>
                     <td className="px-4 py-2 border">{cust.address}</td>
                     <td className="px-4 py-2 border text-center">
                       <Link
@@ -211,13 +236,10 @@ const StaffList = () => {
             </tbody>
           </table>
         </div>
-
         {/* Pagination */}
-
         {/* Pagination */}
         {/* {!isSearching && !loading && staff.length > 0 && ( */}
         <div className="flex justify-center items-center mt-6 space-x-2">
-          <LoadingOverlay isLoading={loading} message="Loading staffs..." />
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
@@ -225,19 +247,31 @@ const StaffList = () => {
           >
             Previous
           </button>
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() => handlePageChange(i + 1)}
-              className={`px-3 py-1 rounded ${
-                page === i + 1
-                  ? "bg-[#a997cb] text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+
+          {(() => {
+            const maxVisible = 5;
+            const startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+            const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            const adjustedStartPage = Math.max(1, endPage - maxVisible + 1);
+
+            return Array.from(
+              { length: endPage - adjustedStartPage + 1 },
+              (_, i) => adjustedStartPage + i
+            ).map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => handlePageChange(pageNum)}
+                className={`px-3 py-1 rounded ${
+                  page === pageNum
+                    ? "bg-[#a997cb] text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {pageNum}
+              </button>
+            ));
+          })()}
+
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
@@ -246,7 +280,7 @@ const StaffList = () => {
             Next
           </button>
         </div>
-        {/* )} */}
+        ;{/* )} */}
       </>
     </div>
   );

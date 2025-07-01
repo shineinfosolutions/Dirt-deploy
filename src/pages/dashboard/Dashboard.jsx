@@ -10,7 +10,9 @@ import {
   FaSpinner,
 } from "react-icons/fa";
 import axios from "axios";
-import LoadingOverlay from "../../components/LoadingOverlay";
+import Loader from "../Loader";
+
+// import LoadingOverlay from "../../components/LoadingOverlay";
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -334,7 +336,7 @@ const Dashboard = () => {
             </div>
             <div className="space-y-4">
               {listLoading ? (
-                <ListSkeleton />
+                <Loader />
               ) : deliveryData.todayReceivedOrders.orders?.length > 0 ? (
                 deliveryData.todayReceivedOrders.orders.map((order, index) => (
                   <div
@@ -420,15 +422,17 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <FaClock className="text-blue-500" />
-                Today's Expected Deliveries
+                Today Expected
               </h3>
               <span className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium">
-                {deliveryData.todayExpectedDeliveries.orders?.length || 0}{" "}
-                orders
+                {deliveryData.todayExpectedDeliveries.count || 0} orders
               </span>
             </div>
+
             <div className="space-y-4">
-              {deliveryData.todayExpectedDeliveries.orders?.length > 0 ? (
+              {listLoading ? (
+                <Loader />
+              ) : deliveryData.todayExpectedDeliveries.orders?.length > 0 ? (
                 deliveryData.todayExpectedDeliveries.orders.map(
                   (order, index) => (
                     <div
@@ -449,23 +453,25 @@ const Dashboard = () => {
                             Receipt #{order.receiptNo}
                           </p>
                           <p className="text-xs text-blue-600 font-medium">
-                            Expected Today
+                            ₹{order.charges?.totalAmount || 0}
                           </p>
                         </div>
                       </div>
-                      <button
-                        onClick={() => handleMarkPendingAsCollected(order._id)}
-                        className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors shadow-sm"
-                      >
-                        Mark Delivered
-                      </button>
+                      <div className="text-right">
+                        <span className="text-sm bg-blue-100 text-blue-700 px-2 py-1 rounded-full">
+                          Expected Today
+                        </span>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
                     </div>
                   )
                 )
               ) : (
-                <div className="text-center py-8">
-                  <FaClock className="text-purple-500 text-4xl mx-auto mb-4" />
-                  <p className="text-gray-600">
+                <div className="text-center py-12">
+                  <FaClock className="text-gray-300 text-5xl mx-auto mb-4" />
+                  <p className="text-gray-500 text-lg">
                     No deliveries expected for today
                   </p>
                 </div>
@@ -515,20 +521,30 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <FaTruck className="text-green-500" />
-                Delivered Orders
+                Delivered
               </h3>
               <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
                 {deliveryData.delivered.count || 0} orders
               </span>
             </div>
+
+            {/* <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <FaTruck className="text-green-500" />
+                Delivered Orders
+              </h3>
+              <span className="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium">
+                {deliveryData.delivered.count || 0} orders
+              </span>
+            </div> */}
             <div className="space-y-4">
               {listLoading ? (
-                <ListSkeleton />
+                <Loader />
               ) : deliveryData.delivered.orders?.length > 0 ? (
                 deliveryData.delivered.orders.map((order, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center  px-4 py-2  bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-l-4 border-green-400 hover:shadow-md transition-shadow"
+                    className="flex justify-between items-center px-4 py-2 bg-gradient-to-r from-green-50 to-green-100 rounded-lg border-l-4 border-green-400 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-green-200 rounded-full flex items-center justify-center">
@@ -549,7 +565,7 @@ const Dashboard = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <span className="text-sm bg-green-600 text-white px-3 py-1 rounded-full">
+                      <span className="text-sm bg-green-600 text-white px-2 py-1 rounded-full">
                         Delivered
                       </span>
                       <p className="text-xs text-gray-500 mt-1">
@@ -602,7 +618,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <FaSpinner className="text-yellow-500" />
-                Pending Orders
+                Pending
               </h3>
               <span className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-full text-sm font-medium">
                 {deliveryData.pending.count || 0} orders
@@ -610,7 +626,7 @@ const Dashboard = () => {
             </div>
             <div className="space-y-4">
               {listLoading ? (
-                <ListSkeleton />
+                <Loader />
               ) : deliveryData.pending.orders?.length > 0 ? (
                 deliveryData.pending.orders.map((order, index) => (
                   <div
@@ -630,17 +646,22 @@ const Dashboard = () => {
                         <p className="text-sm text-gray-600">
                           Receipt #{order.receiptNo}
                         </p>
-                        <p className="text-xs text-yellow-500 font-medium">
-                          In Progress
+                        <p className="text-xs text-yellow-600 font-medium">
+                          ₹{order.charges?.totalAmount || 0}
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleMarkPendingAsCollected(order._id)}
-                      className="px-4 py-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
-                    >
-                      Mark Collected
-                    </button>
+                    <div className="text-right">
+                      <button
+                        onClick={() => handleMarkPendingAsCollected(order._id)}
+                        className="px-2 bg-orange-600 text-white text-sm rounded-lg hover:bg-orange-700 transition-colors shadow-sm"
+                      >
+                        Mark Collected
+                      </button>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -686,7 +707,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
                 <FaTshirt className="text-orange-500" />
-                Collected Orders
+                Collected
               </h3>
               <span className="bg-orange-100 text-orange-700 px-3 py-1 rounded-full text-sm font-medium">
                 {deliveryData.collected.count || 0} orders
@@ -694,12 +715,12 @@ const Dashboard = () => {
             </div>
             <div className="space-y-4">
               {listLoading ? (
-                <ListSkeleton />
+                <Loader />
               ) : deliveryData.collected.orders?.length > 0 ? (
                 deliveryData.collected.orders.map((order, index) => (
                   <div
                     key={index}
-                    className="flex justify-between items-center  px-4 py-2  bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border-l-4 border-orange-400 hover:shadow-md transition-shadow"
+                    className="flex justify-between items-center px-4 py-2 bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg border-l-4 border-orange-400 hover:shadow-md transition-shadow"
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-orange-200 rounded-full flex items-center justify-center">
@@ -715,20 +736,25 @@ const Dashboard = () => {
                           Receipt #{order.receiptNo}
                         </p>
                         <p className="text-xs text-orange-600 font-medium">
-                          {order.pickupAndDelivery?.pickupDate
-                            ? new Date(
-                                order.pickupAndDelivery.pickupDate
-                              ).toLocaleDateString()
-                            : "Ready for delivery"}
+                          ₹{order.charges?.totalAmount || 0}
                         </p>
                       </div>
                     </div>
-                    <button
-                      onClick={() => handleMarkAsCollected(order._id)}
-                      className="px-4 py-2 bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors shadow-sm"
-                    >
-                      Mark Delivered
-                    </button>
+                    <div className="text-right">
+                      <button
+                        onClick={() => handleMarkAsCollected(order._id)}
+                        className="px-2  bg-green-600 text-white text-sm rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                      >
+                        Mark Delivered
+                      </button>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {order.pickupAndDelivery?.pickupDate
+                          ? new Date(
+                              order.pickupAndDelivery.pickupDate
+                            ).toLocaleDateString()
+                          : new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
                   </div>
                 ))
               ) : (
@@ -1091,12 +1117,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-6 px-0">
-      <LoadingOverlay
+      {/* <LoadingOverlay
         isLoading={loading || markLoading}
         message={
           markLoading ? "Updating order status..." : "Loading dashboard data..."
         }
-      />
+      /> */}
       <div className="p-6 bg-gradient-to-br from-purple-100 via-white to-purple-50 min-h-screen">
         {/* Header */}
         <div className="mb-8">

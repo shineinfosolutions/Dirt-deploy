@@ -3,7 +3,7 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 import { FaTrashAlt, FaEdit } from "react-icons/fa";
-import LoadingOverlay from "../../components/LoadingOverlay";
+import Loader from "../Loader";
 
 const CustomerList = () => {
   const [customers, setCustomers] = useState([]);
@@ -57,10 +57,6 @@ const CustomerList = () => {
   };
 
   useEffect(() => {
-    fetchCustomers(page);
-  }, [page]);
-
-  useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchQuery.trim()) {
         searchCustomers();
@@ -72,6 +68,12 @@ const CustomerList = () => {
 
     return () => clearTimeout(timeoutId);
   }, [searchQuery]);
+
+  useEffect(() => {
+    if (!isSearching) {
+      fetchCustomers(page);
+    }
+  }, [page, isSearching]);
 
   const handleDelete = async (id) => {
     const confirm = window.confirm(
@@ -116,37 +118,37 @@ const CustomerList = () => {
     }
   };
 
-  const SkeletonRow = () => (
-    <tr className="animate-pulse">
-      <td className="px-4 py-2 border">
-        <div className="h-4 bg-gray-200 rounded w-8"></div>
-      </td>
-      <td className="px-4 py-2 border">
-        <div className="h-4 bg-gray-200 rounded w-20"></div>
-      </td>
-      <td className="px-4 py-2 border">
-        <div className="h-4 bg-gray-200 rounded w-20"></div>
-      </td>
-      <td className="px-4 py-2 border">
-        <div className="h-4 bg-gray-200 rounded w-24"></div>
-      </td>
-      <td className="px-4 py-2 border">
-        <div className="h-4 bg-gray-200 rounded w-32"></div>
-      </td>
-      <td className="px-4 py-2 border">
-        <div className="h-4 bg-gray-200 rounded w-40"></div>
-      </td>
-      <td className="px-4 py-2 border">
-        <div className="h-4 bg-gray-200 rounded w-16"></div>
-      </td>
-      <td className="px-4 py-2 border">
-        <div className="flex justify-center space-x-2">
-          <div className="h-4 bg-gray-200 rounded w-8"></div>
-          <div className="h-4 bg-gray-200 rounded w-8"></div>
-        </div>
-      </td>
-    </tr>
-  );
+  // const SkeletonRow = () => (
+  //   <tr className="animate-pulse">
+  //     <td className="px-4 py-2 border">
+  //       <div className="h-4 bg-gray-200 rounded w-8"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border">
+  //       <div className="h-4 bg-gray-200 rounded w-20"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border">
+  //       <div className="h-4 bg-gray-200 rounded w-20"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border">
+  //       <div className="h-4 bg-gray-200 rounded w-24"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border">
+  //       <div className="h-4 bg-gray-200 rounded w-32"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border">
+  //       <div className="h-4 bg-gray-200 rounded w-40"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border">
+  //       <div className="h-4 bg-gray-200 rounded w-16"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border">
+  //       <div className="flex justify-center space-x-2">
+  //         <div className="h-4 bg-gray-200 rounded w-8"></div>
+  //         <div className="h-4 bg-gray-200 rounded w-8"></div>
+  //       </div>
+  //     </td>
+  //   </tr>
+  // );
 
   if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
 
@@ -157,7 +159,6 @@ const CustomerList = () => {
           Customer Directory
         </h2>
       </div>
-
       {/* Search Input */}
       <div className="flex items-center mb-6 space-x-2">
         <input
@@ -177,7 +178,8 @@ const CustomerList = () => {
           <button
             onClick={() => {
               setSearchQuery("");
-              fetchEntries(1); // Reset to page 1 and refetch normal entries
+              setIsSearching(false);
+              fetchCustomers(1);
             }}
             className="bg-gray-300 text-gray-800 px-4 py-2 rounded hover:bg-gray-400"
           >
@@ -185,9 +187,16 @@ const CustomerList = () => {
           </button>
         )}
       </div>
-
       <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-200 shadow-sm rounded-lg overflow-hidden">
+          {loading && (
+            <div className="md:hidden flex justify-center items-center px-20 ml-10 py-16 rounded-lg  mb-4">
+              <div className="text-center">
+                <Loader />
+                {/* <p className="text-gray-500 mt-2">Loading customers...</p> */}
+              </div>
+            </div>
+          )}
           <thead className="bg-theme-purple/20 text-theme-purple">
             <tr>
               <th className="text-center px-4 py-2 border whitespace-nowrap">
@@ -214,11 +223,17 @@ const CustomerList = () => {
               <th className="text-center px-4 py-2 border">Actions</th>
             </tr>
           </thead>
+          {/* <Loader /> */}
+
           <tbody className="bg-white">
             {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <SkeletonRow key={index} />
-              ))
+              <tr className="hidden md:table-row">
+                <td colSpan="8" className="py-8">
+                  <div className="flex justify-center items-center">
+                    <Loader />
+                  </div>
+                </td>
+              </tr>
             ) : customers.length === 0 ? (
               <tr>
                 <td colSpan="8" className="text-center py-8 text-gray-500">
@@ -257,11 +272,9 @@ const CustomerList = () => {
           </tbody>
         </table>
       </div>
-
       {/* Pagination - only when not searching */}
       {/* {!isSearching && !loading && customers.length > 0 && ( */}
       <div className="flex justify-center items-center mt-6 space-x-2">
-        <LoadingOverlay isLoading={loading} message="Loading customers..." />
         <button
           onClick={() => handlePageChange(page - 1)}
           disabled={page === 1}
@@ -269,19 +282,31 @@ const CustomerList = () => {
         >
           Previous
         </button>
-        {[...Array(totalPages)].map((_, i) => (
-          <button
-            key={i}
-            onClick={() => handlePageChange(i + 1)}
-            className={`px-3 py-1 rounded ${
-              page === i + 1
-                ? "bg-[#a997cb] text-white"
-                : "bg-gray-100 text-gray-600"
-            }`}
-          >
-            {i + 1}
-          </button>
-        ))}
+
+        {(() => {
+          const maxVisible = 5;
+          const startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+          const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+          const adjustedStartPage = Math.max(1, endPage - maxVisible + 1);
+
+          return Array.from(
+            { length: endPage - adjustedStartPage + 1 },
+            (_, i) => adjustedStartPage + i
+          ).map((pageNum) => (
+            <button
+              key={pageNum}
+              onClick={() => handlePageChange(pageNum)}
+              className={`px-3 py-1 rounded ${
+                page === pageNum
+                  ? "bg-[#a997cb] text-white"
+                  : "bg-gray-100 text-gray-600"
+              }`}
+            >
+              {pageNum}
+            </button>
+          ));
+        })()}
+
         <button
           onClick={() => handlePageChange(page + 1)}
           disabled={page === totalPages}
@@ -290,7 +315,7 @@ const CustomerList = () => {
           Next
         </button>
       </div>
-      {/* )} */}
+      ;{/* )} */}
     </div>
   );
 };

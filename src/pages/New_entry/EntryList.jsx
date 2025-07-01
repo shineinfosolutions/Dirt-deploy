@@ -5,7 +5,8 @@ import toast from "react-hot-toast";
 import { FaTrashAlt, FaEdit, FaWhatsapp } from "react-icons/fa";
 import { RiNewspaperLine } from "react-icons/ri";
 import QrSection from "../QrSection";
-import LoadingOverlay from "../../components/LoadingOverlay";
+import Loader from "../Loader";
+// import LoadingOverlay from "../../components/LoadingOverlay";
 
 const EntryList = () => {
   const [entries, setEntries] = useState([]);
@@ -201,36 +202,36 @@ Thank you for choosing our service!`;
     window.open(whatsappUrl, "_blank");
   };
 
-  const SkeletonRow = () => (
-    <tr className="animate-pulse">
-      <td className="px-4 py-2 border w-[100px]">
-        <div className="h-4 bg-gray-200 rounded "></div>
-      </td>
-      <td className="px-4 py-2 border  w-[115px]">
-        <div className="h-4 bg-gray-200 rounded"></div>
-      </td>
-      <td className="px-4 py-2 border w-[192px]">
-        <div className="h-4 bg-gray-200 rounded "></div>
-      </td>
-      <td className="px-4 py-2 border w-[144px]">
-        <div className="h-4 bg-gray-200 rounded w-20"></div>
-      </td>
-      <td className="px-4 py-2 border w-[155px]">
-        <div className="h-4 bg-gray-200 rounded w-16"></div>
-      </td>
-      <td className="px-4 py-2 border w-[155px]">
-        <div className="h-4 bg-gray-200 rounded w-16"></div>
-      </td>
-      <td className="px-4 py-2 border w-[93px]">
-        <div className="h-6 bg-gray-200 rounded"></div>
-      </td>
-      <td className="px-4 py-2 border w-[155px]">
-        <div className="flex justify-around">
-          <div className="h-4 bg-gray-200 rounded w-12"></div>
-        </div>
-      </td>
-    </tr>
-  );
+  // const SkeletonRow = () => (
+  //   <tr className="animate-pulse">
+  //     <td className="px-4 py-2 border w-[100px]">
+  //       <div className="h-4 bg-gray-200 rounded "></div>
+  //     </td>
+  //     <td className="px-4 py-2 border  w-[115px]">
+  //       <div className="h-4 bg-gray-200 rounded"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border w-[192px]">
+  //       <div className="h-4 bg-gray-200 rounded "></div>
+  //     </td>
+  //     <td className="px-4 py-2 border w-[144px]">
+  //       <div className="h-4 bg-gray-200 rounded w-20"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border w-[155px]">
+  //       <div className="h-4 bg-gray-200 rounded w-16"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border w-[155px]">
+  //       <div className="h-4 bg-gray-200 rounded w-16"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border w-[93px]">
+  //       <div className="h-6 bg-gray-200 rounded"></div>
+  //     </td>
+  //     <td className="px-4 py-2 border w-[155px]">
+  //       <div className="flex justify-around">
+  //         <div className="h-4 bg-gray-200 rounded w-12"></div>
+  //       </div>
+  //     </td>
+  //   </tr>
+  // );
 
   if (error) return <p className="text-red-600 text-center mt-10">{error}</p>;
 
@@ -277,6 +278,14 @@ Thank you for choosing our service!`;
       <>
         <div className="overflow-x-auto">
           <table className="min-w-full border border-[#e7e3f5] shadow-sm rounded-lg overflow-hidden">
+            {loading && (
+              <div className="md:hidden flex justify-center items-center px-20  ml-10 py-16 rounded-lg shadow-sm mb-4">
+                <div className="text-center">
+                  <Loader />
+                  {/* <p className="text-gray-500 mt-2">Loading customers...</p> */}
+                </div>
+              </div>
+            )}
             <thead className="bg-[#e7e3f5] text-[#a997cb]">
               <tr>
                 <th className="text-left px-4 py-2 whitespace-nowrap">
@@ -308,9 +317,13 @@ Thank you for choosing our service!`;
 
             <tbody className="bg-white">
               {loading ? (
-                Array.from({ length: 5 }).map((_, index) => (
-                  <SkeletonRow key={index} />
-                ))
+                <tr>
+                  <td colSpan="8" className="py-8">
+                    <div className="flex justify-center items-center w-full min-h-[100px]">
+                      <Loader />
+                    </div>
+                  </td>
+                </tr>
               ) : entries.length === 0 ? (
                 <tr>
                   <td colSpan="8" className="text-center py-8 text-gray-500">
@@ -401,12 +414,10 @@ Thank you for choosing our service!`;
             </tbody>
           </table>
         </div>
-        <SkeletonRow />
-
+        {/* <SkeletonRow /> */}
         {/* Pagination only when not searching and not loading */}
         {/* {!isSearching && !loading && entries.length > 0 && ( */}
         <div className="flex justify-center items-center mt-6 space-x-2">
-          <LoadingOverlay isLoading={loading} message="Loading entries..." />
           <button
             onClick={() => handlePageChange(page - 1)}
             disabled={page === 1}
@@ -414,19 +425,31 @@ Thank you for choosing our service!`;
           >
             Previous
           </button>
-          {[...Array(totalPages)].map((_, i) => (
-            <button
-              key={i}
-              onClick={() => handlePageChange(i + 1)}
-              className={`px-3 py-1 rounded ${
-                page === i + 1
-                  ? "bg-[#a997cb] text-white"
-                  : "bg-gray-100 text-gray-600"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
+
+          {(() => {
+            const maxVisible = 5;
+            const startPage = Math.max(1, page - Math.floor(maxVisible / 2));
+            const endPage = Math.min(totalPages, startPage + maxVisible - 1);
+            const adjustedStartPage = Math.max(1, endPage - maxVisible + 1);
+
+            return Array.from(
+              { length: endPage - adjustedStartPage + 1 },
+              (_, i) => adjustedStartPage + i
+            ).map((pageNum) => (
+              <button
+                key={pageNum}
+                onClick={() => handlePageChange(pageNum)}
+                className={`px-3 py-1 rounded ${
+                  page === pageNum
+                    ? "bg-[#a997cb] text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {pageNum}
+              </button>
+            ));
+          })()}
+
           <button
             onClick={() => handlePageChange(page + 1)}
             disabled={page === totalPages}
@@ -435,7 +458,7 @@ Thank you for choosing our service!`;
             Next
           </button>
         </div>
-        {/* )} */}
+        ;{/* )} */}
       </>
     </div>
   );
