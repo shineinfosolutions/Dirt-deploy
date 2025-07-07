@@ -2,8 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import { useReactToPrint } from "react-to-print";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useParams } from "react-router-dom";
 import Loader from "/src/pages/Loader";
+import { useParams, useNavigate } from "react-router-dom";
 
 const LaundryBill = () => {
   const { id } = useParams();
@@ -11,6 +11,7 @@ const LaundryBill = () => {
   const [loading, setLoading] = useState(true);
   const [billData, setBillData] = useState(null);
   const [customerInfo, setCustomerInfo] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBillData = async () => {
@@ -95,10 +96,12 @@ const LaundryBill = () => {
   // Dummy placeholders
   const logoUrl = "/Dirt_off_1.png";
   const partyDetails = {
-    address: "123 Clean Street, City",
-    phone: "9876543210",
-    email: "info@laundry.com",
-    gstin: "22AAAAA0000A1Z5",
+    address:
+      "LIG 450 A, SIDDHARTH NAGAR, Taramandal Road, Siddharth Enclave Sub Post Office,  SIDDHARTH ENCLAVE, Gorakhpur, Gorakhpur, Uttar Pradesh, 273017",
+    name: "DIRTOFF",
+    phone: "7311196660",
+    email: "team.dirtoff@gmail.com",
+    gstin: " 09AAYFD0845J1ZV",
   };
 
   const dateOfCollecting = new Date(createdAt).toLocaleDateString();
@@ -107,12 +110,19 @@ const LaundryBill = () => {
 
   return (
     <div className="p-2 md:p-6">
-      <div className="flex justify-end mb-4">
+      <div className="flex justify-between items-center mb-4">
         <button
           onClick={handlePrint}
           className="bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition disabled:opacity-50"
         >
           Print Invoice
+        </button>
+
+        <button
+          onClick={() => navigate("/entrylist")}
+          className="bg-[#a997cb] text-white px-5 py-2 rounded hover:bg-[#8a82b5] transition"
+        >
+          ← Back
         </button>
       </div>
 
@@ -125,17 +135,26 @@ const LaundryBill = () => {
         {/* Smaller Logo */}
         <img src={logoUrl} className="h-16 mb-4" alt="Logo" />
 
-        <p className="text-sm text-gray-600 mb-1">
-          Address: {partyDetails.address}
+        <p className="text-sm text-gray-600 mb-1 leading-relaxed">
+          <span className="font-semibold">Billing Address: </span>
+          {partyDetails.address}
+        </p>
+
+        <p className="text-sm text-gray-600 mb-1 leading-relaxed">
+          <span className="font-semibold">Name: </span>
+          {partyDetails.name}
         </p>
         <p className="text-sm text-gray-600 mb-1">
-          Phone No.: {partyDetails.phone}
+          <spam className="font-semibold">Phone No.: </spam>{" "}
+          {partyDetails.phone}
         </p>
         <p className="text-sm text-gray-600 mb-1">
-          Email ID: {partyDetails.email}
+          <spam className="font-semibold">Email ID: </spam>
+          {partyDetails.email}
         </p>
         <p className="text-sm text-gray-600 mb-4">
-          GSTIN No.: {partyDetails.gstin}
+          <spam className="font-semibold"> GSTIN No.: </spam>{" "}
+          {partyDetails.gstin}
         </p>
 
         <hr className="border-2 border-gray-300 mb-6" />
@@ -143,7 +162,7 @@ const LaundryBill = () => {
         <div className="flex flex-col md:flex-row md:justify-between text-sm mb-6 space-y-4 md:space-y-0">
           <div>
             <p>
-              <span className="font-semibold">Party Details:</span>
+              <span className="font-semibold">Customer Details:</span>
             </p>
             <p>
               <span className="font-semibold">Name:</span>{" "}
@@ -191,7 +210,7 @@ const LaundryBill = () => {
           <table className="w-full table-auto border border-collapse text-sm min-w-[500px]">
             <thead>
               <tr className="bg-gray-100 border-b">
-                <th className="border px-2 py-2 text-left">Sl. No.</th>
+                <th className="border px-2 py-2 text-left">S.No.</th>
                 <th className="border px-2 py-2 text-left">Description</th>
                 <th className="border px-2 py-2 text-left">Qty</th>
                 <th className="border px-2 py-2 text-left">Price/Unit</th>
@@ -242,7 +261,24 @@ const LaundryBill = () => {
           <p>
             <span className="font-semibold">Terms & Condition:</span> {terms}
           </p>
+
           <p className="m-10 font-semibold">Seal & Signature</p>
+        </div>
+
+        <div className="  text-sm text-gray-600">
+          <p>
+            <span className="font-semibold">Bank Name:</span> State Bank of
+            India (SBI)
+          </p>
+          <p>
+            <span className="font-semibold">Account No:</span> 44217282471
+          </p>
+          <p>
+            <span className="font-semibold">IFSC Code:</span> SBIN0016724
+          </p>
+          <p>
+            <span className="font-semibold">Bank Type:</span> Public Sector Bank
+          </p>
         </div>
       </div>
     </div>

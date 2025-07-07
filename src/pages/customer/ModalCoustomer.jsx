@@ -50,8 +50,8 @@ const ModalCustomer = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
     setLoading(true);
 
     const url = id
-      ? `https://dirt-off-deploy.onrender.com/custdirt/update/${id}`
-      : "https://dirt-off-deploy.onrender.com/custdirt/create";
+      ? `https://dirt-off-backend-main.vercel.app/custdirt/update/${id}`
+      : `https://dirt-off-backend-main.vercel.app/custdirt/create`;
 
     const method = id ? "put" : "post";
 
@@ -96,7 +96,7 @@ const ModalCustomer = ({ isPopup = false, onSubmitSuccess, onCancel }) => {
       </div>
       <form
         onSubmit={handleSubmit}
-        className="max-w-2xl mx-auto bg-white shadow p-6 rounded-lg space-y-4"
+        className="max-w-4xl mx-auto bg-gradient-to-br from-purple-100 via-white to-purple-50 shadow p-6 rounded-lg space-y-6"
       >
         <h2 className="text-xl font-semibold text-theme-purple mb-4">
           {id ? "Edit Customer" : "Add Customer"}
